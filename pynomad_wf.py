@@ -12,13 +12,13 @@ import coords_colors as cc
 import geopandas as gpd
 
 
-data_path = 'Rework/data'
+data_path = 'data'
 boundary_file = 'Test2.shp'
 constraints_file = 'Test2_Constraints.shp'
-TS_path = 'Rework/data'
+TS_path = 'data'
 TS = "TS_era.csv"
 TS_column_name = '0'
-DS_path = 'Rework/data'
+DS_path = 'data'
 DS = "TS_era_direct.csv"
 DS_column_name = '0'
 scale_factor = 0.1
@@ -289,11 +289,11 @@ def plot_diff():
 # fig, ax = plt.subplots()
 # np.set_printoptions(threshold=sys.maxsize)
 
-# x, y, n_wt = wf.constrained_random(Boundaries, boundary_shapely, exclusion_zones_shapely, nb_wt_min=30, nb_wt_max=30+1, D=D, placing=True)
+# # x, y, n_wt = wf.constrained_random(Boundaries, boundary_shapely, exclusion_zones_shapely, nb_wt_min=30, nb_wt_max=30+1, D=D, placing=True)
 # # print(n_wt == 90)
-# # x1, y1, dist_matrix, failed_points = wf.constrained_ramdom_2(D, Boundaries, boundary_shapely, exclusion_zones_shapely, ax=ax, n_wt=90)
+# x1, y1, dist_matrix, failed_points = wf.constrained_ramdom_2(D, Boundaries, boundary_shapely, exclusion_zones_shapely, scale_factor=scale_factor, ax=ax, n_wt=90)
 # # print(dist_matrix)
-# # print(wf.compute_number_wrong_wt(boundary_shapely, exclusion_zones_shapely, D, x, y))
+# print(wf.compute_number_wrong_wt(boundary_shapely, exclusion_zones_shapely, D, x1, y1))
 # # print(failed_points)
 # boundary_filled = gpd.GeoSeries(boundary_shapely)
 # exclusion_zone_filled = gpd.GeoSeries(exclusion_zones_shapely)
@@ -313,18 +313,19 @@ def plot_diff():
 # exclusion_zone_filled.plot(ax=ax, color=['gainsboro']*len(exclusion_zones_shapely), zorder=3)
 # exclusion_zone.plot(ax=ax, color=['darkgrey']*len(exclusion_zones_shapely), hatch="///", linewidths=1, zorder=5)
 # null_zone_boundaries.plot(ax=ax, color=['darkgreen']*len(exclusion_zones_shapely), linestyle='dashed', linewidths=1, zorder=4)
-# ax.scatter(x, y, marker="o", s=40, color='red', linewidths=1, alpha=0.5, zorder=6, label='Wind Turbine')
-# # wf.plot_spatial_cstr_generation(x1, y1, "EAP", "GWh", 0, 80, Boundaries, boundary_shapely, exclusion_zones_shapely, max_index, save=True, save_name='TEST_2')
+# ax.scatter(x1, y1, marker="o", s=40, color='red', linewidths=1, alpha=0.5, zorder=6, label='Wind Turbine')
+# wf.plot_spatial_cstr_generation(x1, y1, "EAP", "GWh", 0, 80, Boundaries, boundary_shapely, exclusion_zones_shapely, max_index, ax=ax, save=True, save_name='example_spacing_placing_not_ok')
 # plt.show()
+
 # dist_matrix = wf.distance_matrix(x,y)
 # print(dist_matrix)
 # wf.plot_spatial_cstr_generation(x, y, "EAP", "GWh", 0, n_wt, Boundaries, boundary_shapely, exclusion_zones_shapely, max_index=max_index, save=True, save_name='TEST')
 
 # Comparison between 
 
-fig, (ax1, ax2) = plt.subplots(1, 2)
+# fig, (ax1, ax2) = plt.subplots(1, 2)
 # fig, ax = plt.subplots()
-nsimu = 30
+nsimu = 15
 list_time_mc_0 = []
 list_time_mc_1 = []
 list_success_r = []
@@ -372,8 +373,6 @@ for i in range(nb_wt_min, nb_wt_max, 20):
     time_mc_opt = (t4 - t3)/nsimu
     list_time_mc_1.append(time_mc_opt)
 
-print(list_success_r2)
-print([sum(list_success_r2[i]) for i in range(((nb_wt_max-nb_wt_min)//20))])
 ax1 = plt.subplot(1, 3, 1)
 ax1.bar([i for i in range(nb_wt_min, nb_wt_max, 20)], list_time_mc_0, width=1, label="Random layout")
 ax1.bar([i+1 for i in range(nb_wt_min, nb_wt_max, 20)], list_time_mc_1, width=1, label="Projected layout")
@@ -384,7 +383,7 @@ ax2 = plt.subplot(1, 3, 2)
 ax2.bar([i for i in range(nb_wt_min, nb_wt_max, 20)], [sum(list_success_r[i]) for i in range(((nb_wt_max-nb_wt_min)//20))], width=1, label="Random layout")
 ax2.bar([i+1 for i in range(nb_wt_min, nb_wt_max, 20)], [sum(list_success_r2[i]) for i in range(((nb_wt_max-nb_wt_min)//20))], width=1, label="Projected layout")
 plt.xlabel("Number of wind turbines")
-plt.ylabel("Number of Non feasible plot over " + str(nsimu))
+plt.ylabel("Number of feasible plot over " + str(nsimu))
 
 ax3 = plt.subplot(1, 3, 3)
 ax3.bar([i for i in range(nb_wt_min, nb_wt_max, 20)], [(np.mean(list_unfeasible_0[i])/(nb_wt_min + 20*i))*100 for i in range(((nb_wt_max-nb_wt_min)//20))], width=1, label="Random layout")
@@ -393,9 +392,10 @@ plt.xlabel("Number of wind turbines")
 plt.ylabel("Percentage of badly placed wind turbine over " + str(nsimu))
 
 plt.tight_layout()
+plt.savefig("results/random_projected_comp.png")
 plt.show()
 
-plt.savefig("results/random_projected_comp.png")
+
         
 
 

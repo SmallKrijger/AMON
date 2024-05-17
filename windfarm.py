@@ -46,7 +46,7 @@ Pmax =  Turbine.power(power_curve.WindSpeed.values).max()*1e-3
 ###############################
 
 
-def site_model(TS_path='Rework/data', TS="TS_era.csv", TS_column_name='0', DS_path='Rework/data', DS="TS_era_direct.csv", DS_column_name='0', name='init', reduce_file_size=True):
+def site_model(TS_path='data', TS="TS_era.csv", TS_column_name='0', DS_path='data', DS="TS_era_direct.csv", DS_column_name='0', name='init', reduce_file_size=True):
     
     ## Reading files
     TS = pd.read_csv(os.path.join(TS_path, TS), index_col=0)
@@ -98,12 +98,17 @@ def site_model(TS_path='Rework/data', TS="TS_era.csv", TS_column_name='0', DS_pa
         wd_tot_per_ws.append(site.ds.P.values[i].sum())
 
     max_index = np.argmax(wd_tot_per_ws)
-    # print("Max direction frequency :", max_index, wd_tot_per_ws[max_index])
-    ## Creating WindRose and svaing it
+
+    ## Creating WindRose and saving it
+    script_dir = os.path.dirname(__file__)
+    results_dir = os.path.join(script_dir, 'results/')
+
+    if not os.path.isdir(results_dir):
+        os.makedirs(results_dir)
     fig, ax = plt.subplots()
     site.plot_wd_distribution(n_wd=36, ax=ax)
     fig.set_size_inches(3,3)
-    plt.savefig("Rework/WindRose.png", dpi=130)
+    plt.savefig("results/WindRose.png", dpi=130)
     plt.close()
 
     model = BastankhahGaussianDeficit(use_effective_ws=True) 
@@ -119,7 +124,7 @@ def site_model(TS_path='Rework/data', TS="TS_era.csv", TS_column_name='0', DS_pa
 # SPATIAL CONSTRAINTS #
 #######################
 
-def spatial_constraints(data_path='Rework/data', boundary_file='Test2.shp', constraints_file='Test2_Constraints.shp', scale_factor=0.1):
+def spatial_constraints(data_path='data', boundary_file='Test2.shp', constraints_file='Test2_Constraints.shp', scale_factor=0.1):
     
     # Read domain boundaries, convert to shapely format
     Boundary_file_shp = os.path.join( data_path, boundary_file )
@@ -144,8 +149,9 @@ def spatial_constraints(data_path='Rework/data', boundary_file='Test2.shp', cons
 
 # print(Boundaries, boundary_shapely, Constraints, exclusion_zones_shapely)
 
-def plot_spatial_cstr_generation(x, y, obj_function, units, obj_function_value, n_wt, Boundaries, boundary_shapely, exclusion_zones_shapely, max_index="", cg="", plot_flow_map=False, full_wind_rose=False, save=False, save_name="", scale_factor=0.1):
-    fig, ax = plt.subplots()
+def plot_spatial_cstr_generation(x, y, obj_function, units, obj_function_value, n_wt, Boundaries, boundary_shapely, exclusion_zones_shapely, max_index="", cg="", ax="", plot_flow_map=False, full_wind_rose=False, save=False, save_name="", scale_factor=0.1):
+    if ax == "":    
+        fig, ax = plt.subplots()
 
     boundary_filled = gpd.GeoSeries(boundary_shapely)
     exclusion_zone_filled = gpd.GeoSeries(exclusion_zones_shapely)
@@ -176,7 +182,7 @@ def plot_spatial_cstr_generation(x, y, obj_function, units, obj_function_value, 
                         loc=1)
         wr_plot.patch.set_edgecolor('black')  
         wr_plot.patch.set_linewidth(2) 
-        im = plt.imread('Rework/WindRose.png')
+        im = plt.imread('results/WindRose.png')
         wr_plot.imshow(im)
         wr_plot.axis('off')
     
@@ -257,11 +263,18 @@ def total_distance_between_wt(x, y):
     d = dist_matrix.sum().sum()
     return d
 
-def spacing_constraint_all(Boundaries, boundary_shapely, exclusion_zones_shapely, ax, x, y, D):
+def spacing_constraint_all(Boundaries, boundary_shapely, exclusion_zones_shapely, ax, x, y, D, scale_factor):
     nb_wt = len(x)
     dist_matrix = distance_matrix(x, y)
     failed = False
-    limit_factor = 3
+    safety_margin_x = 1
+    safety_margin_y = 1.4
+    x_min = Boundaries.bbox[0]*scale_factor
+    x_max = Boundaries.bbox[2]*scale_factor
+    y_min = Boundaries.bbox[1]*scale_factor
+    y_max = Boundaries.bbox[3]*scale_factor
+    x_dim = (x_max - x_min)*safety_margin_x
+    y_dim = (y_max - y_min)*safety_margin_y
     for i in range(nb_wt):
         list_try_x = []
         list_try_y = []
@@ -269,11 +282,11 @@ def spacing_constraint_all(Boundaries, boundary_shapely, exclusion_zones_shapely
             if (j != i):
                 nb_iter = 0
                 while (dist_matrix[i][j] < D) or (test_constraints_placing(boundary_shapely, exclusion_zones_shapely, [x[i]], [y[i]])[0] == False):
-                    x_proj, y_proj = spiral_function(nb_iter*(np.pi//2), x[i], y[i], 0.5)
+                    x_proj, y_proj = spiral_function(nb_iter*(np.pi//2), x[i], y[i], 1.5)
                     # list_try_x.append(x_proj)
                     # list_try_y.append(y_proj)
 
-                    if (x_proj < (Boundaries.bbox[0]*0.1)*(1/limit_factor)) or (x_proj > (Boundaries.bbox[2]*0.1)*limit_factor) or (y_proj < (Boundaries.bbox[1]*0.1)*(1/limit_factor)) or (y_proj > (Boundaries.bbox[3]*0.1)*limit_factor):
+                    if (x_proj < x_min - x_dim) or (x_proj > x_max + x_dim) or (y_proj < y_min - y_dim) or (y_proj > y_max + y_dim):
                         failed = True
                         # ax.plot(list_try_x, list_try_y, zorder=8, alpha=0.5)    
                         break
@@ -292,7 +305,34 @@ def spacing_constraint_all(Boundaries, boundary_shapely, exclusion_zones_shapely
                                         dist_matrix[i][k] = np.sqrt((x_proj - x[k])**2 + (y_proj - y[k])**2)
                                 x[i], y[i] = x_proj, y_proj 
                         else:
-                            nb_iter += 1
+                            nb_iter += 1 
+            elif (i == nb_wt - 1):
+                nb_iter = 0
+                while (test_constraints_placing(boundary_shapely, exclusion_zones_shapely, [x[i]], [y[i]])[0] == False):
+                    x_proj, y_proj = spiral_function(nb_iter*(np.pi//2), x[i], y[i], 1.5)
+                    # list_try_x.append(x_proj)
+                    # list_try_y.append(y_proj)
+
+                    if (x_proj < x_min - x_dim) or (x_proj > x_max + x_dim) or (y_proj < y_min - y_dim) or (y_proj > y_max + y_dim):
+                        failed = True
+                        # ax.plot(list_try_x, list_try_y, zorder=8, alpha=0.5)    
+                        break
+                    else:
+                        if test_constraints_placing(boundary_shapely, exclusion_zones_shapely, [x_proj], [y_proj])[0]:
+                            d_proj_i_k = []
+                            for k in range(nb_wt):
+                                if k != i:
+                                    d_proj_i_k.append((np.sqrt((x_proj - x[k])**2 + (y_proj - y[k])**2) >= D))
+
+                            if (sum(d_proj_i_k) != nb_wt-1):
+                                nb_iter += 1                        
+                            else:
+                                for k in range(nb_wt):
+                                    if k != i:
+                                        dist_matrix[i][k] = np.sqrt((x_proj - x[k])**2 + (y_proj - y[k])**2)
+                                x[i], y[i] = x_proj, y_proj 
+                        else:
+                            nb_iter += 1 
         # ax.plot(list_try_x, list_try_y, zorder=8, alpha=0.5)            
     return x, y, dist_matrix, failed
 
@@ -432,19 +472,19 @@ def constrained_random(Boundaries, boundary_shapely, exclusion_zones_shapely, nb
             y_gen[i] = y_new
     return x_gen, y_gen, nacc
 
-def constrained_ramdom_2(D, Boundaries, boundary_shapely, exclusion_zones_shapely, ax="", n_wt=10):
-    x = np.random.uniform( Boundaries.bbox[0], Boundaries.bbox[2], n_wt)*0.1
-    y = np.random.uniform( Boundaries.bbox[1], Boundaries.bbox[3], n_wt)*0.1
+def constrained_ramdom_2(D, Boundaries, boundary_shapely, exclusion_zones_shapely, scale_factor=0.1, ax="", n_wt=10):
+    x = np.random.uniform( Boundaries.bbox[0], Boundaries.bbox[2], n_wt)*scale_factor
+    y = np.random.uniform( Boundaries.bbox[1], Boundaries.bbox[3], n_wt)*scale_factor
     # x_gen, y_gen = projection_point(boundary_shapely, exclusion_zones_shapely, ax, x, y)
     # x_final, y_final, dist_matrix, failed_points = spacing_constraint_all(Boundaries, boundary_shapely, exclusion_zones_shapely, ax, x_gen, y_gen, D)
-    x_gen, y_gen, dist_matrix, failed_points = spacing_constraint_all(Boundaries, boundary_shapely, exclusion_zones_shapely, ax, x, y, D)
+    x_gen, y_gen, dist_matrix, failed_points = spacing_constraint_all(Boundaries, boundary_shapely, exclusion_zones_shapely, ax, x, y, D, scale_factor)
     return x_gen, y_gen, dist_matrix, failed_points
 
 #################
 # ONE GENERATION #
 #################
 
-def cost_dependent_plot_random(boundary_file='Test2.shp', constraints_file='Test2_Constraints.shp', TS_path='Rework/data', TS="TS_era.csv", TS_column_name='0', DS_path='Rework/data', DS="TS_era_direct.csv", DS_column_name='0', obj_function="EAP", nb_wt_min=1, nb_wt_max=10, cost_wt_kw=2500, cost_factor=1, n_years=25, c_MWh=60, scale_factor=0.1, plot_flow_map=False, plot_generation=False):
+def cost_dependent_plot_random(boundary_file='Test2.shp', constraints_file='Test2_Constraints.shp', TS_path='data', TS="TS_era.csv", TS_column_name='0', DS_path='data', DS="TS_era_direct.csv", DS_column_name='0', obj_function="EAP", nb_wt_min=1, nb_wt_max=10, cost_wt_kw=2500, cost_factor=1, n_years=25, c_MWh=60, scale_factor=0.1, plot_flow_map=False, plot_generation=False):
     """
     Calls the constrained_MC_random function. Plots the result configuration.
 
@@ -528,7 +568,7 @@ def storing_value(fmGROSS, TS, TS_column_name, DS, DS_column_name, Boundaries, b
 
     return n_wt, eap, test_set, cg_set, eap_set, wt_set
 
-def monte_carlo_cost_dependent(boundary_file='Test2.shp', constraints_file='Test2_Constraints.shp', TS_path='Rework/data', TS="TS_era.csv", TS_column_name='0', DS_path='Rework/data', DS="TS_era_direct.csv", DS_column_name='0', nsimu=10, obj_function="EAP", nb_wt_min=1, nb_wt_max=500, cost_wt_kw=2500, cost_factor=1, n_years=25, c_MWh=60, scale_factor=0.1, plot_generation=False, plot_flow_map=False, build_graph=False):
+def monte_carlo_cost_dependent(boundary_file='Test2.shp', constraints_file='Test2_Constraints.shp', TS_path='data', TS="TS_era.csv", TS_column_name='0', DS_path='data', DS="TS_era_direct.csv", DS_column_name='0', nsimu=10, obj_function="EAP", nb_wt_min=1, nb_wt_max=500, cost_wt_kw=2500, cost_factor=1, n_years=25, c_MWh=60, scale_factor=0.1, plot_generation=False, plot_flow_map=False, build_graph=False):
     """
     Generates a number nsimu of configuration and returns the best one.
 
@@ -687,7 +727,7 @@ def monte_carlo_cost_dependent(boundary_file='Test2.shp', constraints_file='Test
 # print(obj_function_opt)
 
 import fnmatch
-def uncertainties_calc(xopt, yopt, nopt, simu_ws_dir='Rework/simu_ws', TS_column_name='simulated_0',simu_wd_dir='Rework/simu_wd', DS_column_name='0',cost_wt_kw=2500, cost_factor=1, n_years=25, c_MWh=60):
+def uncertainties_calc(xopt, yopt, nopt, simu_ws_dir='simu_ws', TS_column_name='simulated_0',simu_wd_dir='simu_wd', DS_column_name='0',cost_wt_kw=2500, cost_factor=1, n_years=25, c_MWh=60):
     eap_unc = []
     cost_unc = []
     lcoe_unc = []
