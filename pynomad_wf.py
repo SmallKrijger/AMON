@@ -8,7 +8,6 @@ import os
 from shapely.geometry import Polygon, Point
 import numpy as np
 import matplotlib.pyplot as plt
-import distinctipy as dp
 import coords_colors as cc
 import geopandas as gpd
 
