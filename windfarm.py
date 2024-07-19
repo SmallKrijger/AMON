@@ -16,7 +16,7 @@ from py_wake.site import XRSite
 import xarray as xr
 from py_wake.site._site import UniformSite
 import shapefile
-from shapely.geometry import Polygon, Point
+from shapely.geometry import Polygon, Point, MultiPolygon
 from py_wake.flow_map import XYGrid
 from py_wake.turbulence_models import CrespoHernandez
 from py_wake.deficit_models.deficit_model import WakeDeficitModel, BlockageDeficitModel
@@ -46,43 +46,44 @@ Pmax =  Turbine.power(power_curve.WindSpeed.values).max()*1e-3
 ###############################
 
 
-def site_model(TS_path='data', TS="TS_era.csv", TS_column_name='0', DS_path='data', DS="TS_era_direct.csv", DS_column_name='0', name='init', reduce_file_size=True):
+def site_model(WS_path, WD_path, WS_column_name='0', WD_column_name='0', reduce_file_size=True):
     
     ## Reading files
-    TS = pd.read_csv(os.path.join(TS_path, TS), index_col=0)
-    DS = pd.read_csv(os.path.join(DS_path, DS), index_col=0)
+    WS = pd.read_csv(WS_path, index_col=0)
+    WD = pd.read_csv(WD_path, index_col=0)
     
     if reduce_file_size:
-        TS.index = pd.to_datetime(TS.index)
-        DS.index = pd.to_datetime(DS.index)
+        WS.index = pd.to_datetime(WS.index)
+        WD.index = pd.to_datetime(WD.index)
 
         # restrict to year 2015
-        TS = TS[TS.index.year>=2015]
-        TS = TS[TS.index.hour==00]
+        WS = WS[WS.index.year>=2015]
+        WS = WS[WS.index.hour==00]
         
         # restrict to midnight
-        DS = DS[DS.index.year>=2015]
-        DS = DS[DS.index.hour==00]
+        WD = WD[WD.index.year>=2015]
+        WD = WD[WD.index.hour==00]
 
-    TS = TS[[TS_column_name]]
-    DS = DS[[DS_column_name]]
+    WS = WS[[WS_column_name]]
+    WD = WD[[WD_column_name]]
+
     ## Creating dataframe for wind rose values
     list_of_tuples = [[None for i in range(36)] for j in range(41)]
     wd_values = np.array([i*10 for i in range(36)])
     ws_values = np.array([0] + [0.5+i for i in range(41)])
     df = pd.DataFrame(list_of_tuples, columns=wd_values, index=ws_values[1:])
     
-    N = len(TS)
+    N = len(WS)
     width = 360 / len(wd_values)
     for i in range(len(wd_values)):
         wd = wd_values[i]
         for j in range(len(ws_values)-1):
             lower, upper = ws_values[j], ws_values[j+1]
             if wd == 0:
-                sector = (360 - 0.5*width <= DS.values) | (DS.values < 0.5*width)
+                sector = (360 - 0.5*width <= WD.values) | (WD.values < 0.5*width)
             else:
-                sector = (wd - 0.5*width <= DS.values) & (DS.values < wd + 0.5*width)
-            TS_sector = TS.values[sector]
+                sector = (wd - 0.5*width <= WD.values) & (WD.values < wd + 0.5*width)
+            TS_sector = WS.values[sector]
             df.iloc[j,i] = sum((lower <= TS_sector) & (TS_sector < upper)) / N
 
     ## Create site object
@@ -116,7 +117,7 @@ def site_model(TS_path='data', TS="TS_era.csv", TS_column_name='0', DS_path='dat
     wake_deficitModel = [NoWakeDeficit(), model][isinstance(model, WakeDeficitModel)]
     fmGROSS = All2AllIterative(site, Turbine, wake_deficitModel=wake_deficitModel, blockage_deficitModel=blockage_deficitModel, superpositionModel=SquaredSum(), turbulenceModel=CrespoHernandez())
                     
-    return site, fmGROSS, TS, DS, max_index, wd_tot_per_ws[max_index]
+    return site, fmGROSS, WS, WD, max_index, wd_tot_per_ws[max_index]
 
 # site, fmGROSS, TS, DS = site_model(plot_distribution=False)
 
@@ -124,60 +125,70 @@ def site_model(TS_path='data', TS="TS_era.csv", TS_column_name='0', DS_path='dat
 # SPATIAL CONSTRAINTS #
 #######################
 
-def spatial_constraints(data_path='data', boundary_file='Test2.shp', constraints_file='Test2_Constraints.shp', scale_factor=0.1):
+def spatial_constraints(boundary_file, constraints_file, scale_factor=0.1):
     
     # Read domain boundaries, convert to shapely format
-    Boundary_file_shp = os.path.join( data_path, boundary_file )
-    Boundaries = shapefile.Reader(Boundary_file_shp)
+    Boundaries = shapefile.Reader(boundary_file)
     boundary_shapely = []
 
     for shape in Boundaries.shapes():
         coords = np.array(shape.points).T*scale_factor
         boundary_shapely.append(Polygon(coords.T))
 
-    # Read exclusion zones boundaries, convert to shapely format
-    Constraints_file_shp = os.path.join( data_path, constraints_file )
-    Constraints = shapefile.Reader( Constraints_file_shp )
-    exclusion_zones_shapely = []
-
-    for shape in Constraints.shapes():
-        coords = np.array(shape.points).T*scale_factor
-        exclusion_zones_shapely.append(Polygon(coords.T))
+    boundary_shapely = [MultiPolygon(boundary_shapely)]
     
-    return Boundaries, boundary_shapely, exclusion_zones_shapely
+    exclusion_zones_shapely = []
+    if constraints_file != "na":
+        # Read exclusion zones boundaries, convert to shapely format
+        Constraints = shapefile.Reader(constraints_file)
 
+        for shape in Constraints.shapes():
+            coords = np.array(shape.points).T*scale_factor
+            exclusion_zones_shapely.append(Polygon(coords.T))
+
+    lb = [(Boundaries.bbox[0])*scale_factor, (Boundaries.bbox[1])*scale_factor]
+    ub = [(Boundaries.bbox[2])*scale_factor, (Boundaries.bbox[3])*scale_factor]
+    # print(Boundaries.bbox[0], Boundaries.bbox[1], Boundaries.bbox[2], Boundaries.bbox[3])
+    
+    return lb, ub, boundary_shapely, exclusion_zones_shapely
 
 # print(Boundaries, boundary_shapely, Constraints, exclusion_zones_shapely)
 
-def plot_spatial_cstr_generation(x, y, obj_function, units, obj_function_value, n_wt, Boundaries, boundary_shapely, exclusion_zones_shapely, max_index="", cg="", ax="", plot_flow_map=False, full_wind_rose=False, save=False, save_name="", scale_factor=0.1):
+def plot_spatial_cstr_generation(x, y, obj_function, units, obj_function_value, n_wt, ub, boundary_shapely, exclusion_zones_shapely, max_index="", cg="", ax="", plot_flow_map=False, full_wind_rose=False, save=False, save_name=""):
     if ax == "":    
         fig, ax = plt.subplots()
 
     boundary_filled = gpd.GeoSeries(boundary_shapely)
-    exclusion_zone_filled = gpd.GeoSeries(exclusion_zones_shapely)
-    boundary_filled_index = gpd.GeoSeries(boundary_shapely*len(exclusion_zones_shapely)).boundary
-
     boundary = boundary_filled.boundary
-    exclusion_zone = exclusion_zone_filled.boundary
-    
     ok_zone = boundary_filled
-    for polygon in exclusion_zone_filled:
-        ok_zone = ok_zone.difference(polygon)
-    null_zone_boundaries = boundary_filled_index.intersection(exclusion_zone_filled)
-
     ax.set_facecolor("lightsteelblue")
-    ok_zone.plot(ax=ax, color='lightgreen', alpha=0.5, zorder=1)
-    boundary.plot(ax=ax, color=['darkgreen']*len(exclusion_zone_filled), linewidths=1, zorder=2)
-    exclusion_zone_filled.plot(ax=ax, color=['gainsboro']*len(exclusion_zones_shapely), zorder=3)
-    exclusion_zone.plot(ax=ax, color=['darkgrey']*len(exclusion_zones_shapely), hatch="///", linewidths=1, zorder=5)
-    null_zone_boundaries.plot(ax=ax, color=['darkgreen']*len(exclusion_zones_shapely), linestyle='dashed', linewidths=1, zorder=4)
 
-    ax.scatter(x, y, marker="o", s=40, color='red', linewidths=1, alpha=0.5, zorder=6, label='Wind Turbine')
+    if exclusion_zones_shapely != []:
+        exclusion_zone_filled = gpd.GeoSeries(exclusion_zones_shapely)
+        boundary_filled_index = gpd.GeoSeries(boundary_shapely*len(exclusion_zones_shapely)).boundary
+        exclusion_zone = exclusion_zone_filled.boundary
+        for polygon in exclusion_zone_filled:
+            ok_zone = ok_zone.difference(polygon)
+            null_zone_boundaries = boundary_filled_index.intersection(exclusion_zone_filled)
+        ok_zone.plot(ax=ax, color='lightgreen', alpha=0.5, zorder=1)
+        exclusion_zone_filled.plot(ax=ax, color=['gainsboro']*len(exclusion_zones_shapely), zorder=3)
+        exclusion_zone.plot(ax=ax, color=['darkgrey']*len(exclusion_zones_shapely), hatch="///", linewidths=1, zorder=5)
+        null_zone_boundaries.plot(ax=ax, color=['darkgreen']*len(exclusion_zones_shapely), linestyle='dashed', linewidths=1, zorder=4)
+        ax.scatter(x, y, marker="o", s=40, color='red', linewidths=1, alpha=0.5, zorder=6, label='Wind Turbine')
+
+    else:
+        ok_zone.plot(ax=ax, color='lightgreen', alpha=0.5, zorder=1)
+        ax.scatter(x, y, marker="o", s=40, color='red', linewidths=1, alpha=0.5, zorder=3, label='Wind Turbine')
+    
+    if isinstance(boundary_shapely, list): 
+        boundary.plot(ax=ax, color=['darkgreen']*len(boundary_shapely), linewidths=1, zorder=2)
+    else:
+        boundary.plot(ax=ax, color=['darkgreen'], linewidths=1, zorder=2)
     plt.title( str(obj_function + " = %s " + units + ", Nb wind turbines : %s")%(obj_function_value, n_wt))
 
     if full_wind_rose:
         wr_plot = inset_axes(ax,
-                        width="20%", # width = 30% of parent_bbox
+                        width="20%", # width = 20% of parent_bbox
                         height="29%", 
                         loc=1)
         wr_plot.patch.set_edgecolor('black')  
@@ -189,7 +200,7 @@ def plot_spatial_cstr_generation(x, y, obj_function, units, obj_function_value, 
     else:
         u = np.cos(np.radians(max_index*10))
         v = np.sin(np.radians(max_index*10))
-        ax.quiver(Boundaries.bbox[2]*scale_factor, Boundaries.bbox[3]*scale_factor, u, v, 40, angles=270-(max_index*10), scale=15)
+        ax.quiver(ub[0]-100, ub[1]-100, u, v, 40, angles=270-(max_index*10), scale=15)
 
     if plot_flow_map:
         cg.flow_map().plot_wake_map() 
@@ -199,9 +210,7 @@ def plot_spatial_cstr_generation(x, y, obj_function, units, obj_function_value, 
     ax.legend(loc='lower left')
 
     if save:
-        plt.savefig("results/" + save_name + "_" + str(n_wt) + ".png")
-
-# plot_spatial_cstr_generation([], [], 'EAP', 'GWh', 0, 0, save=True, save_name='Test')
+        plt.savefig(save_name)
 
 def plot_wake_example(D=80):
 
@@ -437,7 +446,6 @@ def constrained_random(Boundaries, boundary_shapely, exclusion_zones_shapely, nb
     start = time.time()
 
     while time.time() - start < max_limit:
-        # print(time.time() - start)
         if nacc < n_wt:
             x = np.random.uniform( Boundaries.bbox[0], Boundaries.bbox[2], n_wt-nacc )*scale_factor
             y = np.random.uniform( Boundaries.bbox[1], Boundaries.bbox[3], n_wt-nacc )*scale_factor
@@ -472,13 +480,14 @@ def constrained_random(Boundaries, boundary_shapely, exclusion_zones_shapely, nb
             y_gen[i] = y_new
     return x_gen, y_gen, nacc
 
-def constrained_ramdom_2(D, Boundaries, boundary_shapely, exclusion_zones_shapely, scale_factor=0.1, ax="", n_wt=10):
+def constrained_random_2(D, Boundaries, boundary_shapely, exclusion_zones_shapely, scale_factor=0.1, ax="", n_wt=10):
     x = np.random.uniform( Boundaries.bbox[0], Boundaries.bbox[2], n_wt)*scale_factor
     y = np.random.uniform( Boundaries.bbox[1], Boundaries.bbox[3], n_wt)*scale_factor
-    # x_gen, y_gen = projection_point(boundary_shapely, exclusion_zones_shapely, ax, x, y)
-    # x_final, y_final, dist_matrix, failed_points = spacing_constraint_all(Boundaries, boundary_shapely, exclusion_zones_shapely, ax, x_gen, y_gen, D)
-    x_gen, y_gen, dist_matrix, failed_points = spacing_constraint_all(Boundaries, boundary_shapely, exclusion_zones_shapely, ax, x, y, D, scale_factor)
-    return x_gen, y_gen, dist_matrix, failed_points
+    x_gen, y_gen = projection_point(boundary_shapely, exclusion_zones_shapely, ax, x, y)
+    x_final, y_final, dist_matrix, failed_points = spacing_constraint_all(Boundaries, boundary_shapely, exclusion_zones_shapely, ax, x_gen, y_gen, D, scale_factor)
+    # x_gen, y_gen, dist_matrix, failed_points = spacing_constraint_all(Boundaries, boundary_shapely, exclusion_zones_shapely, ax, x, y, D, scale_factor)
+    return x_final, y_final, dist_matrix, failed_points
+    # return x, y
 
 #################
 # ONE GENERATION #
@@ -587,7 +596,7 @@ def monte_carlo_cost_dependent(boundary_file='Test2.shp', constraints_file='Test
     nb_wt = 0
 
     # Generating site and fmGROSS
-    site, fmGROSS, TS, DS = site_model(TS_path=TS_path, TS=TS, TS_column_name=TS_column_name, DS_path=DS_path, DS=DS, DS_column_name=DS_column_name)
+    site, fmGROSS, TS, DS, max_index, wd_max = site_model(TS_path=TS_path, TS=TS, TS_column_name=TS_column_name, DS_path=DS_path, DS=DS, DS_column_name=DS_column_name)
 
     # Generating the spatial constraint
     Boundaries, boundary_shapely, exclusion_zones_shapely = spatial_constraints(boundary_file=boundary_file, constraints_file=constraints_file, scale_factor=scale_factor)
