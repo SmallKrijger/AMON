@@ -83,7 +83,7 @@ def NOMAD_execution(param_file_name, x0=""):
     f.close()   
 
 def testing_process():
-    for i in range(1,2):
+    for i in range(1,5):
         NOMAD_execution(param_file_name="tests/" + str(i) + "/param.txt")
 
 if __name__ == '__main__':
