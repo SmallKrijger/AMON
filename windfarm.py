@@ -102,14 +102,14 @@ def site_model(powercurve_path, diameter, hub_height, WS_path, WD_path):
 
     ## Creating WindRose and saving it
     script_dir = os.path.dirname(__file__)
-    results_dir = os.path.join(script_dir, 'results/')
+    results_dir = os.path.join(script_dir, 'data/')
 
     if not os.path.isdir(results_dir):
         os.makedirs(results_dir)
     fig, ax = plt.subplots()
     site.plot_wd_distribution(n_wd=36, ax=ax)
     fig.set_size_inches(3,3)
-    plt.savefig("results/WindRose.png", dpi=130)
+    plt.savefig(results_dir + "/WindRose.png", dpi=130)
     plt.close()
 
     model = BastankhahGaussianDeficit(use_effective_ws=True) 
@@ -192,7 +192,7 @@ def plot_spatial_cstr_generation(x, y, obj_function, units, obj_function_value, 
                         loc=1)
         wr_plot.patch.set_edgecolor('black')  
         wr_plot.patch.set_linewidth(2) 
-        im = plt.imread('results/WindRose.png')
+        im = plt.imread('data/WindRose.png')
         wr_plot.imshow(im)
         wr_plot.axis('off')
     

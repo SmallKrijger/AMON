@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import data as d
 import ast
 import sys
+import os
 
 def NOMAD_execution(param_file_name, x0=""):
     
@@ -49,8 +50,13 @@ def NOMAD_execution(param_file_name, x0=""):
         return 1
     
     plt.figure()
-    test_number = param_file_name.split('/')[1] 
-    stats_file_name = "tests_results/" + test_number + "/nomad_result_" + test_number + ".0.txt"
+    test_number = param_file_name.split('/')[1]
+    script_dir = os.path.dirname(__file__)
+    results_test_dir = os.path.join(script_dir, 'tests_results/' + test_number + "/")
+
+    if not os.path.isdir(results_test_dir):
+        os.makedirs(results_test_dir)
+    stats_file_name = results_test_dir + "/nomad_result_" + test_number + ".0.txt"
     nomad_stat_file = "STATS_FILE  "+ stats_file_name + "  BBE OBJ CONS_H SOL TIME"
     params += [nomad_stat_file]
 
@@ -78,7 +84,7 @@ def NOMAD_execution(param_file_name, x0=""):
     print("Best objective function value : ", obj_function_value, "GWh")
     print("NOMAD execution time : ", t_Nomad, " seconds")
     print("--------- Ending Test", test_number, "---------")
-    f = open("results/output_tests.txt", 'a')  # open file in write mode
+    f = open("tests_results/output_tests.txt", 'a')  # open file in write mode
     f.write(str(test_number) + " " + str(obj_function_value) + " " + str(t_Nomad) + "\n")
     f.close()   
 
