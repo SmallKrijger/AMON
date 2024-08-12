@@ -5,14 +5,17 @@ from matplotlib import pyplot as plt
 import numpy as np
 import windfarm as wf
 import constraints as cst
+import data as d
 import PyNomad
 
-def initial_solution_constrained(D, Boundaries, scale_factor=0.1, ax="", n_wt=10):
-    x = np.random.uniform( Boundaries.bbox[0], Boundaries.bbox[2], n_wt)*scale_factor
-    y = np.random.uniform( Boundaries.bbox[1], Boundaries.bbox[3], n_wt)*scale_factor
-    return x, y
+def initial_solution_constrained(nb_wt, D, buildable_zone, lb, ub):
+    print("Generating initial solution...")
+    x, y = initial_sol_nomad(nb_wt, buildable_zone, D, lb, ub, spacing=True)
+    X0 = sum(map(list, zip(x, y)), [])
+    X0 = list(itertools.chain(*zip(x, y)))
+    return X0
 
-def initial_sol_nomad(nb_wt, buildable_zone, boundary_shapely, exclusion_zones_shapely, D, lb, ub, max_index, spacing=True):
+def initial_sol_nomad(nb_wt, buildable_zone, D, lb, ub, spacing=True):
 
     def initial_sol(x):
         try:
@@ -60,11 +63,22 @@ def initial_sol_nomad(nb_wt, buildable_zone, boundary_shapely, exclusion_zones_s
     
     x_best = result['x_best'][0::2]
     y_best = result['x_best'][1::2]
-    # wf.plot_spatial_cstr_generation(x_best, y_best, "Distance", "m", obj_function_value, nb_wt, ub, boundary_shapely, exclusion_zones_shapely, max_index=max_index, save=True, save_name='initial_sol')
     return x_best, y_best
 
 # x, y = initial_sol_nomad(5000, 30)
 # print(time_Nomad)
 
-    
+def initial_sol_test(param_file_name):
+     # Initializing site and boundary files
+    nb_wt, D, hub_height, scale_factor, power_curve, boundary_file, exclusion_zone_file, wind_speed, wind_direction = d.read_param_file(param_file_name)
+    lb, ub, boundary_shapely, exclusion_zones_shapely = wf.spatial_constraints(boundary_file, exclusion_zone_file, scale_factor=scale_factor)
+    buildable_zone = cst.buildable_zone(boundary_shapely, exclusion_zones_shapely)
+    x, y = initial_sol_nomad(nb_wt, buildable_zone, D, lb, ub, spacing=True)
+    X0 = sum(map(list, zip(x, y)), [])
+    X0 = list(itertools.chain(*zip(x, y)))
+    f = open("tests/4/x0.txt", 'w+')  # open file in write mode
+    f.write(str(X0))
+    f.close()   
+
+initial_sol_test("tests/4/param.txt")
             

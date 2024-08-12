@@ -11,8 +11,9 @@ import matplotlib.pyplot as plt
 
 import pandas as pd
 from py_wake.superposition_models import SquaredSum
-from py_wake.examples.data.hornsrev1 import V80
 from py_wake.site import XRSite
+from py_wake.wind_turbines import WindTurbine
+from py_wake.wind_turbines.power_ct_functions import PowerCtTabular
 import xarray as xr
 from py_wake.site._site import UniformSite
 import shapefile
@@ -34,39 +35,38 @@ from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 data_path = "data"
 results_path = "results"
 
-Turbine = V80()
+def setting_wind_turbine(powercurve_path, diameter, hub_height):
+    power_curve = pd.read_csv(powercurve_path, sep=";", skiprows=0)
+    u = power_curve.WindSpeed.values
+    power = power_curve.Power.values*1e3
+    ct = power_curve.Ct.values
+    windturbine = WindTurbine(name='windturbine',
+                        diameter=diameter,
+                        hub_height=hub_height,
+                        powerCtFunction=PowerCtTabular(u, power,'kW', ct))
+    return windturbine
 
-# Read power curve
-PowerCurve_file = os.path.join( data_path, "PowerCurve1_FromOpenWind.txt" )
-power_curve = pd.read_csv( PowerCurve_file, sep=";", skiprows=2 )
-Pmax =  Turbine.power(power_curve.WindSpeed.values).max()*1e-3
+def reduce_file_size(file_path, years, hours):
+    file = pd.read_csv(file_path, index_col=0)
+    file.index = pd.to_datetime(file.index)
+    file = file[file.index.year >= years]
+    file = file[file.index.hour >= hours]
+    return file
 
 ###############################
 # Read Wind Speed Time-Series #
 ###############################
 
 
-def site_model(WS_path, WD_path, WS_column_name='0', WD_column_name='0', reduce_file_size=True):
+def site_model(powercurve_path, diameter, hub_height, WS_path, WD_path):
     
+    ## Creating Turbine
+    Turbine = setting_wind_turbine(powercurve_path, diameter, hub_height)
+
     ## Reading files
     WS = pd.read_csv(WS_path, index_col=0)
     WD = pd.read_csv(WD_path, index_col=0)
     
-    if reduce_file_size:
-        WS.index = pd.to_datetime(WS.index)
-        WD.index = pd.to_datetime(WD.index)
-
-        # restrict to year 2015
-        WS = WS[WS.index.year>=2015]
-        WS = WS[WS.index.hour==00]
-        
-        # restrict to midnight
-        WD = WD[WD.index.year>=2015]
-        WD = WD[WD.index.hour==00]
-
-    WS = WS[[WS_column_name]]
-    WD = WD[[WD_column_name]]
-
     ## Creating dataframe for wind rose values
     list_of_tuples = [[None for i in range(36)] for j in range(41)]
     wd_values = np.array([i*10 for i in range(36)])
@@ -116,8 +116,7 @@ def site_model(WS_path, WD_path, WS_column_name='0', WD_column_name='0', reduce_
     blockage_deficitModel = [None, model][isinstance(model, BlockageDeficitModel)]
     wake_deficitModel = [NoWakeDeficit(), model][isinstance(model, WakeDeficitModel)]
     fmGROSS = All2AllIterative(site, Turbine, wake_deficitModel=wake_deficitModel, blockage_deficitModel=blockage_deficitModel, superpositionModel=SquaredSum(), turbulenceModel=CrespoHernandez())
-                    
-    return site, fmGROSS, WS, WD, max_index, wd_tot_per_ws[max_index]
+    return fmGROSS, WS, WD, max_index, wd_tot_per_ws[max_index]
 
 # site, fmGROSS, TS, DS = site_model(plot_distribution=False)
 
@@ -207,12 +206,13 @@ def plot_spatial_cstr_generation(x, y, obj_function, units, obj_function_value, 
 
     plt.xlabel("X")
     plt.ylabel("Y")
+    plt.tight_layout()
     ax.legend(loc='lower left')
 
     if save:
         plt.savefig(save_name)
 
-def plot_wake_example(D=80):
+def plot_wake_example(Turbine, D=80):
 
     def get_flow_map(model=None, grid=XYGrid(x=np.linspace(-200, 500, 200), y=np.linspace(-200, 200, 200), h=70),
                  turbulenceModel=CrespoHernandez()):
@@ -242,10 +242,16 @@ def plot_wake_example(D=80):
 # CREATE THE WAKE MODEL #
 #########################
 
-# site, fmGROSS, TS, DS = site_model(TS_path='data', TS="TS_era.csv", TS_column_name='0', DS_path='data', DS="TS_era_direct.csv", DS_column_name='0')
+def read_csv(WS_BB, WD_BB):
+    WS = pd.read_csv(WS_BB, index_col=0)
+    WS_column_name = list(WS.columns)
+    WD = pd.read_csv(WD_BB, index_col=0)
+    WD_column_name = list(WD.columns)
+    return WS[WS_column_name[0]], WD[WD_column_name[0]]
+
 # Expected annual production
-def aep_func(x, y, fmGROSS, TS, DS, TS_column_name='0', DS_column_name='0'):
-    cg = fmGROSS(x, y, ws=TS[TS_column_name], wd=DS[DS_column_name], time=True)
+def aep_func(x, y, fmGROSS, WS_BB, WD_BB):
+    cg = fmGROSS(x, y, ws=WS_BB, wd=WD_BB, time=True)
     eap = cg.aep().sum()
     return cg, eap
 

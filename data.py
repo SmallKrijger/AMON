@@ -6,15 +6,17 @@ def read_param_file(param_file_name):
     with open(param_file_name, "r") as file:
         content = file.read().splitlines() 
 
-    nb_wt = int(content[0].split()[1])//2
-    D = int(content[1].split()[1])
-
-    boundary_file = content[2].split()[1]
-    exclusion_zone_file = content[3].split()[1]
-    wind_speed = content[4].split()[1]
-    wind_direction = content[5].split()[1]
+    nb_wt = int(content[0].split()[1])
+    diameter = int(content[1].split()[1])
+    hub_height = int(content[2].split()[1])
+    scale_factor = float(content[3].split()[1])
+    power_curve = content[4].split()[1]
+    boundary_file = content[5].split()[1]
+    exclusion_zone_file = content[6].split()[1]
+    wind_speed = content[7].split()[1]
+    wind_direction = content[8].split()[1]
                
-    return nb_wt, D, boundary_file, exclusion_zone_file, wind_speed, wind_direction
+    return nb_wt, diameter, hub_height, scale_factor, power_curve, boundary_file, exclusion_zone_file, wind_speed, wind_direction
 
 # nb_wt, D, boundary_file, exclusion_zone_file, wind_speed, wind_direction = read_param_file("tests/1/param.txt")
 # print(nb_wt, D, boundary_file, exclusion_zone_file, wind_speed, wind_direction)
