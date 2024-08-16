@@ -1,6 +1,7 @@
 from shapely.geometry import Polygon, Point
-from shapely import distance, difference
+from shapely import distance, difference, equals_exact
 import windfarm as wf
+import time
 
 def creating_list_point(x_coords, y_coords):
     list_points = []
@@ -60,8 +61,19 @@ def multiple_constr(x_coords, y_coords):
                 cstr = cstr + " " + str(-d + 80)
     return str(cstr)
 
-# x_coords = [53571.48, 53500.48, 53671.48]       
-# y_coords = [521900.60, 522000.60, 522100.60]
+def checking_same_coords(x_coords, y_coords):
+    list_points = creating_list_point(x_coords, y_coords)
+    for i, point in enumerate(list_points):
+        if i != len(list_points):
+            list_bool = point.equals_exact(list_points[i+1:], 1e-9)
+            s = sum(list_bool)
+            if s > 0:
+                return False
+    return True
+
+# x_coords = [1, 2, 3]       
+# y_coords = [1, 2, 3]
+# print(checking_same_coords(x_coords, y_coords))
 # cst = multiple_constr(x_coords, y_coords)
 # print(cst)
 # d_matrix = spacing_constraint(x_coords, y_coords)

@@ -76,9 +76,9 @@ def initial_sol_test(param_file_name):
     x, y = initial_sol_nomad(nb_wt, buildable_zone, D, lb, ub, spacing=True)
     X0 = sum(map(list, zip(x, y)), [])
     X0 = list(itertools.chain(*zip(x, y)))
-    f = open("tests/4/x0.txt", 'w+')  # open file in write mode
+    f = open("tests/5/x0.txt", 'w+')  # open file in write mode
     f.write(str(X0))
     f.close()   
 
-initial_sol_test("tests/4/param.txt")
+initial_sol_test("tests/5/param.txt")
             

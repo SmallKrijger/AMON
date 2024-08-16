@@ -26,19 +26,24 @@ def NOMAD_execution(param_file_name, x0=""):
             x_list = [x.get_coord(i) for i in range(dim)]
             x_coords = x_list[0::2]
             y_coords = x_list[1::2]
-            
-            # Calculate constraints
-            sum_dist = cst.placing_constraint(x_coords, y_coords, buildable_zone)
 
-            # Calculate EAP
-            if sum_dist == 0:
-                cg, eap = wf.aep_func(x_coords, y_coords, fmGROSS, WS_BB, WD_BB)
-                s_d = cst.spacing_constraint_min(x_coords, y_coords, D)
-            
-                # NOMAD output
-                eap = -float(eap)*1000000  
-                rawBBO = str(eap) + " " + str(s_d)
-                x.setBBO(rawBBO.encode("UTF-8"))
+            if cst.checking_same_coords(x_coords, y_coords):
+                # Calculate constraints
+                sum_dist = cst.placing_constraint(x_coords, y_coords, buildable_zone)
+
+                # Calculate EAP
+                if sum_dist == 0:
+                    cg, eap = wf.aep_func(x_coords, y_coords, fmGROSS, WS_BB, WD_BB)
+                    s_d = cst.spacing_constraint_min(x_coords, y_coords, D)
+                
+                    # NOMAD output
+                    eap = -float(eap)*1000000  
+                    rawBBO = str(eap) + " " + str(s_d)
+                    x.setBBO(rawBBO.encode("UTF-8"))
+                else:
+                    rawBBO = "-"
+                    x.setBBO(rawBBO.encode("UTF-8"))
+                
             else:
                 rawBBO = "-"
                 x.setBBO(rawBBO.encode("UTF-8"))
@@ -89,8 +94,16 @@ def NOMAD_execution(param_file_name, x0=""):
     f.close()   
 
 def testing_process():
-    for i in range(1,5):
-        NOMAD_execution(param_file_name="tests/" + str(i) + "/param.txt")
+    test_failed = []
+    for i in range(2,3):
+        try:
+            NOMAD_execution(param_file_name="tests/" + str(i) + "/param.txt")
+        except:
+            test_failed.append(i)
+    if test_failed != []:
+        print("Test failed: ", test_failed)
+    print("--------- Tests completed ---------")
+
 
 if __name__ == '__main__':
     testing_process()

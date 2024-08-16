@@ -1,0 +1,9 @@
+DIMENSION               30
+WT_DIAMETER             80
+WT_HUB_HEIGHT           70
+SCALE_FACTOR            1
+POWER_CURVE             data/PowerCurve_V80.txt
+BOUNDARY_FILE           data/real_ex_boundary_zone.shp
+EXCLUSION_ZONE_FILE     data/real_ex_exclusion_zones.shp
+WIND_SPEED              data/wind_speed.csv
+WIND_DIRECTION          data/wind_direction.csv
