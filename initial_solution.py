@@ -1,9 +1,7 @@
 import itertools
 import sys
-import time
-from matplotlib import pyplot as plt
 import numpy as np
-import windfarm as wf
+import windfarm_setting as wf
 import constraints as cst
 import data as d
 import PyNomad
@@ -58,8 +56,6 @@ def initial_sol_nomad(nb_wt, buildable_zone, D, lb, ub, spacing=True):
 
     ## NOMAD optimization 
     result = PyNomad.optimize(initial_sol, X0, lb*nb_wt, ub*nb_wt, params)
-
-    obj_function_value = result['f_best']
     
     x_best = result['x_best'][0::2]
     y_best = result['x_best'][1::2]
@@ -69,9 +65,9 @@ def initial_sol_nomad(nb_wt, buildable_zone, D, lb, ub, spacing=True):
 # print(time_Nomad)
 
 def initial_sol_test(param_file_name):
-     # Initializing site and boundary files
+    # Initializing site and boundary files
     nb_wt, D, hub_height, scale_factor, power_curve, boundary_file, exclusion_zone_file, wind_speed, wind_direction = d.read_param_file(param_file_name)
-    lb, ub, boundary_shapely, exclusion_zones_shapely = wf.spatial_constraints(boundary_file, exclusion_zone_file, scale_factor=scale_factor)
+    lb, ub, boundary_shapely, exclusion_zones_shapely = wf.terrain_setting(boundary_file, exclusion_zone_file, scale_factor=scale_factor)
     buildable_zone = cst.buildable_zone(boundary_shapely, exclusion_zones_shapely)
     x, y = initial_sol_nomad(nb_wt, buildable_zone, D, lb, ub, spacing=True)
     X0 = sum(map(list, zip(x, y)), [])
@@ -80,5 +76,5 @@ def initial_sol_test(param_file_name):
     f.write(str(X0))
     f.close()   
 
-initial_sol_test("tests/5/param.txt")
+# initial_sol_test("tests/5/param.txt")
             

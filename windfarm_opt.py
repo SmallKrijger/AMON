@@ -1,15 +1,14 @@
-import time
-import windfarm as wf
+import windfarm_setting as wf
 import constraints as cst
-import PyNomad
-import matplotlib.pyplot as plt
+import blackbox as bb
 import data as d
 import ast
 import sys
+import time
+
 
 def memoize(func):
     cache = {}
-
     # Inner wrapper function to store the data in the cache
     def wrapper(*args):
         if args in cache:
@@ -24,9 +23,9 @@ def memoize(func):
 def windfarm_opt(param_file_path):
     # Initializing site and boundary files
     nb_wt, D, hub_height, scale_factor, power_curve, boundary_file, exclusion_zone_file, wind_speed, wind_direction = d.read_param_file(param_file_path)
-    fmGROSS, WS, WD, max_index, wd_max = wf.site_model(power_curve, D, hub_height, wind_speed, wind_direction)
-    WS_BB, WD_BB = wf.read_csv("data/wind_speed_1.csv", "data/wind_direction_1.csv") ## remove it at the end (speeding process)
-    lb, ub, boundary_shapely, exclusion_zones_shapely = wf.spatial_constraints(boundary_file, exclusion_zone_file, scale_factor=scale_factor)
+    fmGROSS, WS, WD, max_index, wd_max = wf.site_setting(power_curve, D, hub_height, wind_speed, wind_direction)
+    WS_BB, WD_BB = d.read_csv_wind_data("data/wind_speed_1.csv", "data/wind_direction_1.csv") ## remove it at the end (speeding process)
+    lb, ub, boundary_shapely, exclusion_zones_shapely = wf.terrain_setting(boundary_file, exclusion_zone_file, scale_factor=scale_factor)
     buildable_zone = cst.buildable_zone(boundary_shapely, exclusion_zones_shapely)
     return fmGROSS, WS_BB, WD_BB, D, buildable_zone
 
@@ -49,7 +48,7 @@ def aep(param_file_path, x):
 
     # Calculating EAP and constraints
     try:
-        cg, eap = wf.aep_func(x_coords, y_coords, fmGROSS, WS_BB, WD_BB)
+        cg, eap = bb.aep_func(x_coords, y_coords, fmGROSS, WS_BB, WD_BB)
         s_d = cst.spacing_constraint_min(x_coords, y_coords, D)
         sum_dist = cst.placing_constraint(x_coords, y_coords, buildable_zone)
         eap = float(eap)

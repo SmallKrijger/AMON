@@ -1,7 +1,5 @@
-from shapely.geometry import Polygon, Point
+from shapely.geometry import Point
 from shapely import distance, difference, equals_exact
-import windfarm as wf
-import time
 
 def creating_list_point(x_coords, y_coords):
     list_points = []
@@ -31,16 +29,6 @@ def placing_constraint(x_coords, y_coords, ok_zone):
     sum_dist = sum(dist)
     return sum_dist
 
-def spacing_constraint(x_coords, y_coords, D):
-    list_points = creating_list_point(x_coords, y_coords)
-    d_matrix = dist_matrix(list_points)
-    count_wt = 0
-    for list_d in d_matrix:
-        for d in list_d:
-            if (d != 0) and (d <= D):
-                count_wt += 1
-    return count_wt
-
 def spacing_constraint_min(x_coords, y_coords, D):
     list_points = creating_list_point(x_coords, y_coords)
     d_matrix = dist_matrix(list_points)
@@ -51,16 +39,6 @@ def spacing_constraint_min(x_coords, y_coords, D):
                 s_d += min(d - D, 0)
     return -s_d
 
-def multiple_constr(x_coords, y_coords):
-    list_points = creating_list_point(x_coords, y_coords)
-    d_matrix = dist_matrix(list_points)
-    cstr = " "
-    for list_d in d_matrix:
-        for d in list_d:
-            if d != 0:
-                cstr = cstr + " " + str(-d + 80)
-    return str(cstr)
-
 def checking_same_coords(x_coords, y_coords):
     list_points = creating_list_point(x_coords, y_coords)
     for i, point in enumerate(list_points):
@@ -70,18 +48,3 @@ def checking_same_coords(x_coords, y_coords):
             if s > 0:
                 return False
     return True
-
-# x_coords = [1, 2, 3]       
-# y_coords = [1, 2, 3]
-# print(checking_same_coords(x_coords, y_coords))
-# cst = multiple_constr(x_coords, y_coords)
-# print(cst)
-# d_matrix = spacing_constraint(x_coords, y_coords)
-# d_matrix1 = wf.distance_matrix(x_coords, y_coords)
-# print(d_matrix)
-# print(d_matrix1)
-
-# dist_boundary, dist_exclusion = placing_constraint(x_coords, y_coords, wf.boundary_shapely, wf.exclusion_zones_shapely)
-# print(dist_boundary, dist_exclusion)
-## if dist_boundary > 0 then not in bound
-## if dist_exclusion > 0 then in exclusion zones

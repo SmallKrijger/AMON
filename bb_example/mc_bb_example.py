@@ -3,13 +3,12 @@ import sys
 import windfarm_opt as wf_opt
 import data as d
 import numpy as np
-import windfarm as wf
 import itertools
 
 ## Optimiseur type Monte Carlo
 def optimiseur_test(instance, x0, nb_eval):
-    if os.path.exists("results\bb_result.txt"):
-        os.remove("results\bb_result.txt")
+    if os.path.exists("bb_example\results\bb_result.txt"):
+        os.remove("bb_example\results\bb_result.txt")
     eap_0, s_d_0, sum_dist_0 = wf_opt.aep(instance, x0)
     best_eap = eap_0
     for _ in range(nb_eval):

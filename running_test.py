@@ -1,6 +1,8 @@
 import time
-import windfarm as wf
+import windfarm_setting as wf
 import constraints as cst
+import blackbox as bb
+import plotting_functions as plot_f
 import PyNomad
 import matplotlib.pyplot as plt
 import data as d
@@ -13,9 +15,9 @@ def NOMAD_execution(param_file_name, x0=""):
     # Initializing site and boundary files
     nb_wt, D, hub_height, scale_factor, power_curve, boundary_file, exclusion_zone_file, wind_speed, wind_direction = d.read_param_file(param_file_name)
     params, nb_it = d.read_config_file("data/config.txt", nb_wt)
-    fmGROSS, WS, WD, max_index, wd_max = wf.site_model(power_curve, D, hub_height, wind_speed, wind_direction)
-    WS_BB, WD_BB = wf.read_csv("data/wind_speed_1.csv", "data/wind_direction_1.csv")
-    lb, ub, boundary_shapely, exclusion_zones_shapely = wf.spatial_constraints(boundary_file, exclusion_zone_file, scale_factor=scale_factor)
+    fmGROSS, WS, WD, max_index, wd_max = wf.site_setting(power_curve, D, hub_height, wind_speed, wind_direction)
+    WS_BB, WD_BB = d.read_csv_wind_data("data/wind_speed_1.csv", "data/wind_direction_1.csv")
+    lb, ub, boundary_shapely, exclusion_zones_shapely = wf.terrain_setting(boundary_file, exclusion_zone_file, scale_factor=scale_factor)
     buildable_zone = cst.buildable_zone(boundary_shapely, exclusion_zones_shapely)
 
     ## BB function
@@ -33,7 +35,7 @@ def NOMAD_execution(param_file_name, x0=""):
 
                 # Calculate EAP
                 if sum_dist == 0:
-                    cg, eap = wf.aep_func(x_coords, y_coords, fmGROSS, WS_BB, WD_BB)
+                    cg, eap = bb.aep_func(x_coords, y_coords, fmGROSS, WS_BB, WD_BB)
                     s_d = cst.spacing_constraint_min(x_coords, y_coords, D)
                 
                     # NOMAD output
@@ -81,11 +83,11 @@ def NOMAD_execution(param_file_name, x0=""):
     test_number = param_file_name.split('/')[1] 
     np_evals, np_obj, best_eval, best_of = d.read_stat_file(nb_it, stat_file_name="tests_results/" + test_number + "/nomad_result_" + test_number + ".0.txt")
     plt.clf()
-    d.draw_result_nomad(np_evals, np_obj, best_eval, best_of, nb_it, nb_wt, "tests_results/" + test_number + "/convergence_plot_" + test_number + ".png" )
+    plot_f.plot_result_nomad(np_evals, np_obj, best_eval, best_of, nb_it, nb_wt, "tests_results/" + test_number + "/convergence_plot_" + test_number + ".png" )
 
     obj_function_value = -result['f_best']*10**(-6)
-    cg, eap = wf.aep_func(result['x_best'][0::2], result['x_best'][1::2], fmGROSS, WS_BB, WD_BB)
-    wf.plot_spatial_cstr_generation(result['x_best'][0::2], result['x_best'][1::2], "EAP", "GWh", obj_function_value, nb_wt, ub, boundary_shapely, exclusion_zones_shapely, max_index=max_index, cg=cg, plot_flow_map=False, save=True, save_name="tests_results/" + test_number + "/layout_" + test_number + ".png")
+    cg, eap = bb.aep_func(result['x_best'][0::2], result['x_best'][1::2], fmGROSS, WS_BB, WD_BB)
+    plot_f.plot_terrain(result['x_best'][0::2], result['x_best'][1::2], "EAP", "GWh", obj_function_value, nb_wt, ub, boundary_shapely, exclusion_zones_shapely, max_index=max_index, cg=cg, plot_flow_map=False, save=True, save_name="tests_results/" + test_number + "/layout_" + test_number + ".png")
     print("Best objective function value : ", obj_function_value, "GWh")
     print("NOMAD execution time : ", t_Nomad, " seconds")
     print("--------- Ending Test", test_number, "---------")
@@ -95,7 +97,7 @@ def NOMAD_execution(param_file_name, x0=""):
 
 def testing_process():
     test_failed = []
-    for i in range(2,3):
+    for i in range(1,5):
         try:
             NOMAD_execution(param_file_name="tests/" + str(i) + "/param.txt")
         except:

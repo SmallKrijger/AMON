@@ -1,5 +1,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
+
+def read_csv_wind_data(WS_BB, WD_BB):
+    WS = pd.read_csv(WS_BB, index_col=0)
+    WS_column_name = list(WS.columns)
+    WD = pd.read_csv(WD_BB, index_col=0)
+    WD_column_name = list(WD.columns)
+    return WS[WS_column_name[0]], WD[WD_column_name[0]]
 
 def read_param_file(param_file_name):
     # Read the file
@@ -17,9 +25,6 @@ def read_param_file(param_file_name):
     wind_direction = content[8].split()[1]
                
     return nb_wt, diameter, hub_height, scale_factor, power_curve, boundary_file, exclusion_zone_file, wind_speed, wind_direction
-
-# nb_wt, D, boundary_file, exclusion_zone_file, wind_speed, wind_direction = read_param_file("tests/1/param.txt")
-# print(nb_wt, D, boundary_file, exclusion_zone_file, wind_speed, wind_direction)
 
 def read_config_file(config_file_name, nb_wt):
     params = []
@@ -72,14 +77,3 @@ def read_stat_file(total_budget, stat_file_name="nomad_result.0.txt"):
     best_eval.append(total_budget) # For nice finish of the graph
     best_of.append(best_of[-1]) # //
     return np_evals, np_obj, best_eval, best_of
-
-def draw_result_nomad(np_evals, np_obj, best_eval, best_of, total_budget, nb_wt, save_name):
-    plt.scatter(np_evals, np_obj, color='#d79494', s=10, marker='v', label="NOMAD")
-    plt.step(best_eval, best_of, 'r', where='post')
-    plt.xlabel("Number of function evaluations")
-    plt.ylabel("Best Objective function value (GWh)")
-    plt.title("Convergence plot")
-    plt.xlim(xmin=0)
-    plt.legend()
-    plt.tight_layout()
-    plt.savefig(save_name)
