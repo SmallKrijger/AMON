@@ -27,9 +27,9 @@ pip install -r requirements.txt
 python .\running_test.py
 ```
 
-<p> The results of this function will be written in the freshly created `tests_results` directory and the file `output_tests.txt`. All tests should result in a 
+The results of this function will be written in the freshly created `tests_results` directory and the file `output_tests.txt`. All tests should result in a 
 lign in the `output_tests.txt` file.
-If the validation fails, please send an email to josephine.gobert@hotmail.com with the full output. </p>
+If the validation fails, please send an email to josephine.gobert@hotmail.com with the full output.
 
 ## Execution
 
