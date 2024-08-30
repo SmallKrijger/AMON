@@ -1,13 +1,33 @@
-import windfarm_setting as wf
-import constraints as cst
-import blackbox as bb
-import data as d
+"""Windfarm layout blackbox and constraints
+
+This script allows the user to use the blackbox function returning the Expected Annual Output and the values 
+of the placing and spacing constraints with its own solver. 
+The instance file must be created following the format used during the tests. The user must provide a starting 
+point with the format used during the tests as well. 
+
+This script requires libraries that are written in the "requirements.txt" to be installed in your Python environnement. 
+Make sure to install them properly with the right version.
+
+"""
+
 import ast
+import blackbox as bb
+import constraints as cst
+import data as d
 import sys
 import time
-
+import windfarm_setting as wf
 
 def memoize(func):
+    """Script to store in cache the site and terrain of the current optimization.
+
+    Args:
+        func (): the function whose output you want to store in cache
+
+    Results:
+        wrapper (): the output of func
+    """
+
     cache = {}
     # Inner wrapper function to store the data in the cache
     def wrapper(*args):
@@ -21,6 +41,19 @@ def memoize(func):
 
 @memoize
 def windfarm_opt(param_file_path):
+    """Script that create the site and terrain for the current optimization.
+
+    Args:
+        param_file_path (str): the instance parameter file path
+
+    Results:
+        fmGROSS (All2AllIterative): site with an associated windrose, turbine, wake model, blockage model, superposition model and turbulence model
+        WS_BB (): panda object for the wind speed data csv
+        WD_BB (): panda object for the wind directiond data csv
+        D (float): diameter of the wind turbine (used for spacing)
+        buildable_zone (multipolygon): zone created by removing the exclusion zones from the boundary zone when they are overlapping
+    """
+
     # Initializing site and boundary files
     nb_wt, D, hub_height, scale_factor, power_curve, boundary_file, exclusion_zone_file, wind_speed, wind_direction = d.read_param_file(param_file_path)
     fmGROSS, WS, WD, max_index, wd_max = wf.site_setting(power_curve, D, hub_height, wind_speed, wind_direction)
@@ -30,7 +63,19 @@ def windfarm_opt(param_file_path):
     return fmGROSS, WS_BB, WD_BB, D, buildable_zone
 
 ## BB function
-def aep(param_file_path, x):   
+def aep(param_file_path, x): 
+    """Script that compute the EAP and the constraints values, return them and store them into the 'results\bb_result.txt' file with the time of execution.
+
+    Args:
+        param_file_path (str): the instance parameter file path
+        x (str or list): the set of wind turbines coordinates
+
+    Results:
+        eap (float): the EAP computed with the blackbox from py_wake library
+        s_d (float): the value of the spacing constraint (separation of the wind turbines)
+        sum_dist (float): the value of the placing constraint (distance of the wind turbines from the terrain)
+    """
+
     t0 = time.time()
     # Building site and wind rose
     fmGROSS, WS_BB, WD_BB, D, buildable_zone = windfarm_opt(param_file_path)

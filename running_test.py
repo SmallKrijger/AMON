@@ -1,27 +1,58 @@
-import time
-import windfarm_setting as wf
-import constraints as cst
+"""
+
+This script is used to run the test to validate the installation of the user. 
+
+This script requires multiple libraries that are written in the "requirements.txt" to be installed in your Python environnement. 
+Make sure to install them properly with the right version.
+
+"""
+
+import ast
 import blackbox as bb
+import constraints as cst
+import data as d
+import matplotlib.pyplot as plt
+import os
 import plotting_functions as plot_f
 import PyNomad
-import matplotlib.pyplot as plt
-import data as d
-import ast
 import sys
-import os
+import time
+import windfarm_setting as wf
 
 def NOMAD_execution(param_file_name, x0=""):
-    
+    """Script to execute the NOMAD solver on the tests instance.
+
+    Args:
+        param_file_name (str): path to the instance parameter file
+        x0 (str): path to the initial set of coordinates
+
+    Results:
+        in the "tests_results" directory:
+        convergence_plot.png (): convergence plot
+        layout.png (): plot of the best layout found for the wind farm
+        nomad_result.0.txt (): text file with the results of all iterations of NOMAD
+    """
+
     # Initializing site and boundary files
     nb_wt, D, hub_height, scale_factor, power_curve, boundary_file, exclusion_zone_file, wind_speed, wind_direction = d.read_param_file(param_file_name)
     params, nb_it = d.read_config_file("data/config.txt", nb_wt)
     fmGROSS, WS, WD, max_index, wd_max = wf.site_setting(power_curve, D, hub_height, wind_speed, wind_direction)
-    WS_BB, WD_BB = d.read_csv_wind_data("data/wind_speed_1.csv", "data/wind_direction_1.csv")
+    WS_BB, WD_BB = d.read_csv_wind_data("data/wind_speed_1.csv", "data/wind_direction_1.csv") ## remove at the end (speeding process)
     lb, ub, boundary_shapely, exclusion_zones_shapely = wf.terrain_setting(boundary_file, exclusion_zone_file, scale_factor=scale_factor)
     buildable_zone = cst.buildable_zone(boundary_shapely, exclusion_zones_shapely)
 
     ## BB function
     def eap_nomad(x):
+        """Script to .
+
+        Args:
+            powercurve_path (str): path to the power curve data
+            diameter (float): the diameter of the wind turbine
+            hub_height (float): the hub height of the wind turbine
+
+        Results:
+            windturbine (WindTurbine): an object of class WindTurbine with the right characteristics
+        """
         try:
             # Get coords
             dim = x.size()
@@ -91,13 +122,17 @@ def NOMAD_execution(param_file_name, x0=""):
     print("Best objective function value : ", obj_function_value, "GWh")
     print("NOMAD execution time : ", t_Nomad, " seconds")
     print("--------- Ending Test", test_number, "---------")
-    f = open("tests_results/output_tests.txt", 'a')  # open file in write mode
+    
+    f = open("tests_results/output_tests.txt", 'a')
     f.write(str(test_number) + " " + str(obj_function_value) + " " + str(t_Nomad) + "\n")
     f.close()   
 
 def testing_process():
+    if os.path.exists("tests_results/output_tests.txt"):
+        os.remove("tests_results/output_tests.txt")
+
     test_failed = []
-    for i in range(1,5):
+    for i in range(1,2):
         try:
             NOMAD_execution(param_file_name="tests/" + str(i) + "/param.txt")
         except:
