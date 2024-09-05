@@ -47,7 +47,7 @@ eap, spacing_constraint, placing_constraint = windfarm_opt.aep('.\instance.txt',
 python .\windfarm_opt.py .\instance.txt .\X.txt
 ```
 
-<p> Your `.\instance.txt` file is the instance parameter file and should follow the format such as the one in the `tests` folder: </p>
+Your `.\instance.txt` file is the instance parameter file and should follow the format such as the one in the `tests` folder:
 
 ```bash
 DIMENSION               Number of wind turbines in your problem
@@ -60,7 +60,7 @@ EXCLUSION_ZONE_FILE     Path to the exclusion zones shapefile (na if you have no
 WIND_SPEED              Path to the wind speed csv data
 WIND_DIRECTION          Path to the wind direction csv data
 ```
-<p> `.\X.txt` is the path to the initial set of points for the blackbox to begin with. It should follow the same format as the one in the `tests` folder: </p>
+`.\X.txt` is the path to the initial set of points for the blackbox to begin with. It should follow the same format as the one in the `tests` folder:
 
 ```bash
 [x_0, y_0, x_1, y_1, ..., x_n, y_n]
