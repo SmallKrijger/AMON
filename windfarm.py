@@ -251,7 +251,7 @@ def read_csv(WS_BB, WD_BB):
 
 # Expected annual production
 def aep_func(x, y, fmGROSS, WS_BB, WD_BB):
-    cg = fmGROSS(x, y, ws=WS_BB, wd=WD_BB, time=True)
+    cg = fmGROSS(x, y, ws=WS_BB['0'], wd=WD_BB['0'], time=True)
     eap = cg.aep().sum()
     return cg, eap
 
@@ -448,43 +448,44 @@ def constrained_random(Boundaries, boundary_shapely, exclusion_zones_shapely, nb
     x_gen, y_gen = np.zeros((2,n_wt))
     nacc = 0
     x_acc, y_acc = [], []
-    max_limit = 120
-    start = time.time()
+    # max_limit = 120
+    # start = time.time()
 
-    while time.time() - start < max_limit:
-        if nacc < n_wt:
-            x = np.random.uniform( Boundaries.bbox[0], Boundaries.bbox[2], n_wt-nacc )*scale_factor
-            y = np.random.uniform( Boundaries.bbox[1], Boundaries.bbox[3], n_wt-nacc )*scale_factor
+    # while time.time() - start < max_limit:
+        # if nacc < n_wt:
+    while nacc < n_wt:
+        x = np.random.uniform( Boundaries.bbox[0], Boundaries.bbox[2], n_wt-nacc )*scale_factor
+        y = np.random.uniform( Boundaries.bbox[1], Boundaries.bbox[3], n_wt-nacc )*scale_factor
 
-            if placing_spacing:
-                acc = test_constraints_placing_spacing(D, boundary_shapely, exclusion_zones_shapely, x, y, x_acc, y_acc)
+        if placing_spacing:
+            acc = test_constraints_placing_spacing(D, boundary_shapely, exclusion_zones_shapely, x, y, x_acc, y_acc)
 
-            if placing:
-                acc = test_constraints_placing(boundary_shapely, exclusion_zones_shapely, x, y)
+        if placing:
+            acc = test_constraints_placing(boundary_shapely, exclusion_zones_shapely, x, y)
 
-            nnew = acc.sum()
-            for xi in x[acc]:
-                x_acc.append(xi)
-            for yi in y[acc]:
-                y_acc.append(yi)
+        nnew = acc.sum()
+        # for xi in x[acc]:
+        #     x_acc.append(xi)
+        # for yi in y[acc]:
+        #     y_acc.append(yi)
 
-            x_gen[nacc:nacc+nnew], y_gen[nacc:nacc+nnew] = x[acc], y[acc]
-            nacc += nnew
-            if verbose:
-                print("nb. accepted = %s"%nacc)
-        else:
-            return x_gen, y_gen, n_wt
+        x_gen[nacc:nacc+nnew], y_gen[nacc:nacc+nnew] = x[acc], y[acc]
+        nacc += nnew
+        if verbose:
+            print("nb. accepted = %s"%nacc)
+    # else:
+    return x_gen, y_gen, n_wt
     
-    for i in range(len(x_gen)):
-        if x_gen[i] == 0:
-            x_new = np.random.uniform( Boundaries.bbox[0], Boundaries.bbox[2], 1)*scale_factor
-            y_new = np.random.uniform( Boundaries.bbox[1], Boundaries.bbox[3], 1)*scale_factor
-            # while not test_constraints_placing(boundary_shapely, exclusion_zones_shapely, [x_new], [y_new])[0]:
-            #     x_new = np.random.uniform( Boundaries.bbox[0], Boundaries.bbox[2], 1)*scale_factor
-            #     y_new = np.random.uniform( Boundaries.bbox[1], Boundaries.bbox[3], 1)*scale_factor 
-            x_gen[i] = x_new
-            y_gen[i] = y_new
-    return x_gen, y_gen, nacc
+    # for i in range(len(x_gen)):
+    #     if x_gen[i] == 0:
+    #         x_new = np.random.uniform( Boundaries.bbox[0], Boundaries.bbox[2], 1)*scale_factor
+    #         y_new = np.random.uniform( Boundaries.bbox[1], Boundaries.bbox[3], 1)*scale_factor
+    #         # while not test_constraints_placing(boundary_shapely, exclusion_zones_shapely, [x_new], [y_new])[0]:
+    #         #     x_new = np.random.uniform( Boundaries.bbox[0], Boundaries.bbox[2], 1)*scale_factor
+    #         #     y_new = np.random.uniform( Boundaries.bbox[1], Boundaries.bbox[3], 1)*scale_factor 
+    #         x_gen[i] = x_new
+    #         y_gen[i] = y_new
+    # return x_gen, y_gen, nacc
 
 def constrained_random_2(D, Boundaries, boundary_shapely, exclusion_zones_shapely, scale_factor=0.1, ax="", n_wt=10):
     x = np.random.uniform( Boundaries.bbox[0], Boundaries.bbox[2], n_wt)*scale_factor
@@ -570,11 +571,11 @@ def storing_value(fmGROSS, TS, TS_column_name, DS, DS_column_name, Boundaries, b
     -------
     TODO
     """
-    x, y, n_wt = constrained_random(Boundaries, boundary_shapely, exclusion_zones_shapely, nb_wt_min=nb_wt_min, nb_wt_max=nb_wt_max, scale_factor=scale_factor, placing_spacing=True)
+    x, y, n_wt = constrained_random(Boundaries, boundary_shapely, exclusion_zones_shapely, nb_wt_min=nb_wt_min, nb_wt_max=nb_wt_max, scale_factor=scale_factor, placing=True)
     test_set.append( (x, y) )
 
     # Expected annual production and storing it
-    cg, eap = aep_func(x, y, fmGROSS=fmGROSS, TS=TS, DS=DS, TS_column_name=TS_column_name, DS_column_name=DS_column_name)
+    cg, eap = aep_func(x, y, fmGROSS=fmGROSS, WS_BB=TS, WD_BB=DS)
     eap_set.append(eap)
     cg_set.append(cg)
     
@@ -582,6 +583,8 @@ def storing_value(fmGROSS, TS, TS_column_name, DS, DS_column_name, Boundaries, b
     wt_set.append(n_wt)
 
     return n_wt, eap, test_set, cg_set, eap_set, wt_set
+
+import data as d
 
 def monte_carlo_cost_dependent(boundary_file='Test2.shp', constraints_file='Test2_Constraints.shp', TS_path='data', TS="TS_era.csv", TS_column_name='0', DS_path='data', DS="TS_era_direct.csv", DS_column_name='0', nsimu=10, obj_function="EAP", nb_wt_min=1, nb_wt_max=500, cost_wt_kw=2500, cost_factor=1, n_years=25, c_MWh=60, scale_factor=0.1, plot_generation=False, plot_flow_map=False, build_graph=False):
     """
@@ -602,15 +605,20 @@ def monte_carlo_cost_dependent(boundary_file='Test2.shp', constraints_file='Test
     nb_wt = 0
 
     # Generating site and fmGROSS
-    site, fmGROSS, TS, DS, max_index, wd_max = site_model(TS_path=TS_path, TS=TS, TS_column_name=TS_column_name, DS_path=DS_path, DS=DS, DS_column_name=DS_column_name)
-
+    nb_wt, D, hub_height, scale_factor, power_curve, boundary_file, exclusion_zone_file, wind_speed, wind_direction = d.read_param_file("tests/1/param.txt")
+    wind_speed = "data/wind_speed_1.csv"
+    wind_direction = "data/wind_direction_1.csv"
+    fmGROSS, TS, DS, max_index, wd_max = site_model(power_curve, D, hub_height, wind_speed, wind_direction)
+    Pmax=1
     # Generating the spatial constraint
-    Boundaries, boundary_shapely, exclusion_zones_shapely = spatial_constraints(boundary_file=boundary_file, constraints_file=constraints_file, scale_factor=scale_factor)
+    lb, ub, boundary_shapely, exclusion_zones_shapely = spatial_constraints(boundary_file=boundary_file, constraints_file=constraints_file, scale_factor=scale_factor)
+    Boundaries = shapefile.Reader(boundary_file)
 
     if obj_function == "EAP":
         eap_max = 0
         
         for i in range(nsimu):
+            print(i)
             n_wt, eap, test_set, cg_set, eap_set, wt_set = storing_value(fmGROSS, TS, TS_column_name, DS, DS_column_name, Boundaries, boundary_shapely, exclusion_zones_shapely, test_set, cg_set, eap_set, wt_set, nb_wt_min, nb_wt_max, scale_factor)
             
             # clear_output(wait=True)
@@ -640,7 +648,7 @@ def monte_carlo_cost_dependent(boundary_file='Test2.shp', constraints_file='Test
         if plot_generation:
             if plot_flow_map:
                 cg_opt.flow_map().plot_wake_map()
-            plot_spatial_cstr_generation(xopt, yopt, obj_function, units, np.round(float(eap_set[iopt]),3), nopt, boundary_shapely, exclusion_zones_shapely, save=True, save_name='MC') 
+            plot_spatial_cstr_generation(xopt, yopt, obj_function, units, np.round(float(eap_set[iopt]),3), nopt, ub ,boundary_shapely, exclusion_zones_shapely, max_index=max_index, save=True, save_name='MC') 
 
         return xopt, yopt, nopt, eap_set[iopt], eap_set
 

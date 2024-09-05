@@ -80,5 +80,5 @@ def initial_sol_test(param_file_name):
     f.write(str(X0))
     f.close()   
 
-initial_sol_test("tests/5/param.txt")
+# initial_sol_test("tests/5/param.txt")
             

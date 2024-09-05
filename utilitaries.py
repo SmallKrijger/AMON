@@ -1,5 +1,12 @@
-import windfarm as wf
+import itertools
+import time
 
+import numpy as np
+import windfarm as wf
+import initial_solution as init_sol
+import matplotlib.pyplot as plt
+import PyNomad
+import sys
 ## Utilitaries function 
 def aep_func_wt(coords, nb_wt):
     cg, eap = wf.aep_func(coords[nb_wt:], coords[:nb_wt])
@@ -87,6 +94,7 @@ def plot_NOMAD_CV(total_budget, nb_wt, list_starting_coords, name):
 #     NOMAD_result = plot_NOMAD_CV(10, 15, cc.list_start_coords_15, str(i))
 # NOMAD_result = plot_NOMAD_CV(10, 15, cc.list_start_coords_15, '0')
 # print(NOMAD_result)
+
 
 def plot_diff(nb_eolienne, nb_evals):
     plt.figure()
@@ -192,6 +200,10 @@ def plot_diff(nb_eolienne, nb_evals):
         plt.clf()
 
 # plot_diff(nb_eolienne, nb_evals)
+
+xopt, yopt, nopt, obj_function_opt, eap_set = wf.monte_carlo_cost_dependent(boundary_file="data/boundary_zone.shp", constraints_file="data/exclusion_zones.shp", TS_path="data", TS="wind_speed_1.csv", TS_column_name='0', DS_path="data", DS="wind_direction_1.csv", DS_column_name='0', nsimu=15000, obj_function="EAP", nb_wt_min=30, nb_wt_max=31, cost_factor=0.7, plot_generation=True, plot_flow_map=False, build_graph=False)
+
+
 
 def dist_calc():
     fig, ax = plt.subplots()
