@@ -22,37 +22,46 @@ import windfarm_setting as wf
 def NOMAD_execution(param_file_name, x0=""):
     """Script to execute the NOMAD solver on the tests instance.
 
-    Args:
-        param_file_name (str): path to the instance parameter file
-        x0 (str): path to the initial set of coordinates
+    Parameters
+    ----------
+    param_file_name : str
+        Path to the instance parameter file.
+    x0 : str 
+        Path to the initial set of coordinates.
 
-    Results:
-        in the "tests_results" directory:
-        convergence_plot.png (): convergence plot
-        layout.png (): plot of the best layout found for the wind farm
-        nomad_result.0.txt (): text file with the results of all iterations of NOMAD
+    Returns
+    -------
+    tests_results\...\convergence_plot.png :
+        Convergence plot.
+    tests_results\...\layout.png :
+        Plot of the best layout found for the wind farm.
+    tests_results\...\nomad_result.0.txt :
+        Text file with the results of all evaluations of NOMAD.
     """
 
     # Initializing site and boundary files
     nb_wt, D, hub_height, scale_factor, power_curve, boundary_file, exclusion_zone_file, wind_speed, wind_direction = d.read_param_file(param_file_name)
     params, nb_it = d.read_config_file("data/config.txt", nb_wt)
     fmGROSS, WS, WD, max_index, wd_max = wf.site_setting(power_curve, D, hub_height, wind_speed, wind_direction)
-    WS_BB, WD_BB = d.read_csv_wind_data("data/wind_speed_1.csv", "data/wind_direction_1.csv") ## remove at the end (speeding process)
+    WS_BB, WD_BB = d.read_csv_wind_data(wind_speed, wind_direction)
     lb, ub, boundary_shapely, exclusion_zones_shapely = wf.terrain_setting(boundary_file, exclusion_zone_file, scale_factor=scale_factor)
     buildable_zone = cst.buildable_zone(boundary_shapely, exclusion_zones_shapely)
 
     ## BB function
     def eap_nomad(x):
-        """Script to .
+        """Script to compute the eap and constraint values with the NOMAD solver.
 
-        Args:
-            powercurve_path (str): path to the power curve data
-            diameter (float): the diameter of the wind turbine
-            hub_height (float): the hub height of the wind turbine
+        Parameters
+        ----------
+        x : list
+            List of (x,y) coordinates.
 
-        Results:
-            windturbine (WindTurbine): an object of class WindTurbine with the right characteristics
+        Returns
+        -------
+        boolean :
+            1 if the evaluation was successful, 0 otherwise.
         """
+
         try:
             # Get coords
             dim = x.size()
@@ -114,7 +123,7 @@ def NOMAD_execution(param_file_name, x0=""):
     test_number = param_file_name.split('/')[1] 
     np_evals, np_obj, best_eval, best_of = d.read_stat_file(nb_it, stat_file_name="tests_results/" + test_number + "/nomad_result_" + test_number + ".0.txt")
     plt.clf()
-    plot_f.plot_result_nomad(np_evals, np_obj, best_eval, best_of, nb_it, nb_wt, "tests_results/" + test_number + "/convergence_plot_" + test_number + ".png" )
+    plot_f.plot_result_nomad(np_evals, np_obj, best_eval, best_of, "tests_results/" + test_number + "/convergence_plot_" + test_number + ".png" )
 
     obj_function_value = -result['f_best']*10**(-6)
     cg, eap = bb.aep_func(result['x_best'][0::2], result['x_best'][1::2], fmGROSS, WS_BB, WD_BB)
@@ -128,6 +137,15 @@ def NOMAD_execution(param_file_name, x0=""):
     f.close()   
 
 def testing_process():
+    """Script to launch the testing process.
+
+        Parameters
+        ----------
+            
+        Returns
+        -------
+        NOMAD_execution function results.
+        """
     if os.path.exists("tests_results/output_tests.txt"):
         os.remove("tests_results/output_tests.txt")
 

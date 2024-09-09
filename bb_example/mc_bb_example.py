@@ -1,6 +1,6 @@
 import os
 import sys
-import windfarm_opt as wf_opt
+import windfarm_eval as wf_opt
 import data as d
 import numpy as np
 import itertools

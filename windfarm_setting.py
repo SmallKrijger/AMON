@@ -3,7 +3,7 @@
 This script contains the functions to create and properly set the site, terrain, windrose and turbine for the 
 blackbox.
 
-This script requires multiple libraries that are written in the "requirements.txt" to be installed in your Python environnement. 
+This script requires multiple libraries that are written in the `requirements.txt` to be installed in your Python environnement. 
 Make sure to install them properly with the right version.
 
 """
@@ -29,13 +29,19 @@ import xarray as xr
 def wind_turbine_setting(powercurve_path, diameter, hub_height):
     """Script to create a wind turbine with the right characteristics.
 
-    Args:
-        powercurve_path (str): path to the power curve data
-        diameter (float): the diameter of the wind turbine
-        hub_height (float): the hub height of the wind turbine
+    Parameters
+    ----------
+    powercurve_path : str
+        Path to the power curve data.
+    diameter : float
+        The diameter of the wind turbine.
+    hub_height : float
+        The hub height of the wind turbine.
 
-    Results:
-        windturbine (WindTurbine): an object of class WindTurbine with the right characteristics
+    Returns
+    -------
+    windturbine : WindTurbine
+        An object of class WindTurbine with the right characteristics.
     """
 
     power_curve = pd.read_csv(powercurve_path, sep=";", skiprows=0)
@@ -51,19 +57,31 @@ def wind_turbine_setting(powercurve_path, diameter, hub_height):
 def site_setting(powercurve_path, diameter, hub_height, WS_path, WD_path):
     """Script to create the site and get dominant wind from the wind rose.
 
-    Args:
-        powercurve_path (str): path to the power curve data
-        diameter (float): the diameter of the wind turbine
-        hub_height (float): the hub height of the wind turbine
-        WS_path (): path to the wind speed data csv
-        WD_path (): path to the wind direction data csv
+    Parameters
+    ----------
+    powercurve_path : str
+        Path to the power curve data.
+    diameter : float
+        The diameter of the wind turbine.
+    hub_height : float
+        The hub height of the wind turbine.
+    WS_path :
+        Path to the wind speed data csv.
+    WD_path :
+        Path to the wind direction data csv.
 
-    Results:
-        fmGROSS (All2AllIterative): site with an associated windrose, turbine, wake model, blockage model, superposition model and turbulence model
-        WS (): panda object for the wind speed data csv
-        WD (): panda object for the wind directiond data csv
-        max_index (): index of the wind direction with the highest frequency in the wd_tot_per_ws list
-        wd_tot_per_ws[max_index] (): value of the wind direction with the highest frequency
+    Returns
+    -------
+    fmGROSS : All2AllIterative
+        Site with an associated windrose, turbine, wake model, blockage model, superposition model and turbulence model.
+    WS :
+        Dataframe object for the wind speed data csv.
+    WD :
+        DataFrame object for the wind directiond data csv.
+    max_index :
+        Index of the wind direction with the highest frequency in the wd_tot_per_ws list.
+    wd_tot_per_ws[max_index] :
+        Value of the highest frequency.
     """
 
     ## Creating Turbine
@@ -125,23 +143,30 @@ def site_setting(powercurve_path, diameter, hub_height, WS_path, WD_path):
     blockage_deficitModel = [None, model][isinstance(model, BlockageDeficitModel)]
     wake_deficitModel = [NoWakeDeficit(), model][isinstance(model, WakeDeficitModel)]
     fmGROSS = All2AllIterative(site, Turbine, wake_deficitModel=wake_deficitModel, blockage_deficitModel=blockage_deficitModel, superpositionModel=SquaredSum(), turbulenceModel=CrespoHernandez())
-    print(model, blockage_deficitModel, wake_deficitModel)
-    print(max_index, wd_tot_per_ws[max_index])
     return fmGROSS, WS, WD, max_index, wd_tot_per_ws[max_index]
 
 def terrain_setting(boundary_file, constraints_file, scale_factor=0.1):
     """Script to create the terrain and get the lower and upper bound of its boundary.
 
-    Args:
-        boundary_file (str): path to the boundary shapefile
-        constraints_file (str): path to the exclusion zones shapefile (optional, can be set to "na" if none)
-        scale_factor (float): scale factor to control the size of the terrain (usually set to 1)
+    Parameters
+    ----------
+    boundary_file : str
+        Path to the boundary shapefile.
+    constraints_file : str
+        Path to the exclusion zones shapefile (optional, can be set to "na" if none).
+    scale_factor : float
+        Scale factor to control the size of the terrain (usually set to 1).
 
-    Results:
-        lb (list): lower bound of the boundary zone on the x and y axis
-        ub (list): upper bound of the boundary zone on the x and y axis
-        boundary_shapely (list): list of type shapely Multipolygon defining the boundary zone
-        exclusion_zones_shapely (list): list of type shapely Polygon defining the exclusion zones if any
+    Returns
+    -------
+    lb : list
+        Lower bound of the boundary zone on the x and y axis.
+    ub : list
+        Upper bound of the boundary zone on the x and y axis.
+    boundary_shapely : list
+        List of type Shapely Multipolygon defining the boundary zone.
+    exclusion_zones_shapely : list
+        List of type Shapely Polygon defining the exclusion zones if any.
     """
 
     # Read domain boundaries, convert to shapely format

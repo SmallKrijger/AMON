@@ -21,11 +21,15 @@ import windfarm_setting as wf
 def memoize(func):
     """Script to store in cache the site and terrain of the current optimization.
 
-    Args:
-        func (): the function whose output you want to store in cache
+    Parameters
+    ----------
+    func :
+        The function with outputs to store in cache.
 
-    Results:
-        wrapper (): the output of func
+    Returns
+    -------
+    wrapper :
+        The output of `func`.
     """
 
     cache = {}
@@ -40,18 +44,26 @@ def memoize(func):
     return wrapper
 
 @memoize
-def windfarm_opt(param_file_path):
-    """Script that create the site and terrain for the current optimization.
+def windfarm_eval(param_file_path):
+    """Script that creates the site and terrain for the current optimization.
 
-    Args:
-        param_file_path (str): the instance parameter file path
+    Parameters
+    ----------
+    param_file_path : str
+        The instance parameter file path.
 
-    Results:
-        fmGROSS (All2AllIterative): site with an associated windrose, turbine, wake model, blockage model, superposition model and turbulence model
-        WS_BB (): panda object for the wind speed data csv
-        WD_BB (): panda object for the wind directiond data csv
-        D (float): diameter of the wind turbine (used for spacing)
-        buildable_zone (multipolygon): zone created by removing the exclusion zones from the boundary zone when they are overlapping
+    Returns
+    -------
+    fmGROSS : All2AllIterative
+        Site with an associated windrose, turbine, wake model, blockage model, superposition model and turbulence model.
+    WS_BB : Dataframe
+        Dataframe for the wind speed data csv.
+    WD_BB : Dataframe
+        Dataframe for the wind directiond data csv.
+    D : float
+        Diameter of the wind turbine (used for spacing).
+    buildable_zone : MultiPolygon
+        Zone created by removing the exclusion zones from the boundary zone when they are overlapping.
     """
 
     # Initializing site and boundary files
@@ -66,19 +78,26 @@ def windfarm_opt(param_file_path):
 def aep(param_file_path, x): 
     """Script that compute the EAP and the constraints values, return them and store them into the 'results\bb_result.txt' file with the time of execution.
 
-    Args:
-        param_file_path (str): the instance parameter file path
-        x (str or list): the set of wind turbines coordinates
+    Parameters
+    ----------
+    param_file_path : str
+        The instance parameter file path.
+    x : str or list
+        The set of wind turbines coordinates.
 
-    Results:
-        eap (float): the EAP computed with the blackbox from py_wake library
-        s_d (float): the value of the spacing constraint (separation of the wind turbines)
-        sum_dist (float): the value of the placing constraint (distance of the wind turbines from the terrain)
+    Returns
+    -------
+    eap : float
+        The EAP computed with the blackbox from py_wake library.
+    s_d : float
+        The value of the spacing constraint (separation of the wind turbines).
+    sum_dist : float
+        The value of the placing constraint (distance of the wind turbines from the terrain).
     """
 
     t0 = time.time()
     # Building site and wind rose
-    fmGROSS, WS_BB, WD_BB, D, buildable_zone = windfarm_opt(param_file_path)
+    fmGROSS, WS_BB, WD_BB, D, buildable_zone = windfarm_eval(param_file_path)
 
     # Getting the windturbines coordinates 
     if not isinstance(x, list):
@@ -116,6 +135,6 @@ def aep(param_file_path, x):
 
 if __name__ == '__main__':
     param_path = sys.argv[1]     # Get param file pat
-    x0_path = sys.argv[2]    # Get initial solution (optional)
-    eap, s_d, sum_dist = windfarm_opt(param_path, x0_path)
+    x0_path = sys.argv[2]        # Get initial solution (optional)
+    eap, s_d, sum_dist = windfarm_eval(param_path, x0_path)
     print("EAP = " + str(eap) + " GWh,", "Spacing constraint = " + str(s_d) + " m,", "Placing constraint = " + str(sum_dist) + " m.")

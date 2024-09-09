@@ -1,9 +1,60 @@
-from mpl_toolkits.axes_grid1.inset_locator import inset_axes
+"""
+
+This script contains the functions to plot the different graphs for the terrain and NOMAD results.
+
+This script requires multiple libraries that are written in the `requirements.txt` to be installed in your Python environnement. 
+Make sure to install them properly with the right version.
+
+"""
+
 import geopandas as gpd
 import matplotlib.pyplot as plt
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 import numpy as np
 
 def plot_terrain(x, y, obj_function, units, obj_function_value, n_wt, ub, boundary_shapely, exclusion_zones_shapely, max_index="", cg="", ax="", plot_flow_map=False, full_wind_rose=False, save=False, save_name=""):
+    """Script to evaluate the blackbox function.
+
+    Parameters
+    ----------
+    x : list
+        List of x coordinates.
+    y : list
+        List of y coordinates.
+    obj_function : str
+        Name of the objective function.
+    units : str
+        Units of the objective function.
+    obj_function_value : int
+        Value of the objective function.
+    n_wt : int
+        Number of wind turbines.
+    ub : list
+        Upper bound of the boundary zone on the x and y axis.
+    boundary_shapely : list
+        List of Shapely polygons for the boundary.
+    exclusion_zones_shapely : list
+        List of Shapely polygons for the exclusion zone.
+    max_index : int
+        Wind direction having the highest frequency.
+    cg :
+        fmGROSS site with associated coordinates of the wind turbines and selected wind values.   
+    ax : Pyplot Axis
+        Parameter to set if there is already a Pyplot Axis created.
+    plot_flow_map : Boolean
+        If True then the flow map is plotted on top of the terrain.
+    full_wind_rose : Boolean
+        If True then the full wind rose is plotted in the top right corner insted of the major wind direction arrow.
+    save : Boolean
+        If True then the graph is save with the `save_name` name.
+    save_name : str
+        Name of the file.
+
+    Returns
+    -------
+    Pyplot graph of the terrain.
+    """
+    
     if ax == "":    
         fig, ax = plt.subplots()
 
@@ -62,7 +113,27 @@ def plot_terrain(x, y, obj_function, units, obj_function_value, n_wt, ub, bounda
     if save:
         plt.savefig(save_name)
 
-def plot_result_nomad(np_evals, np_obj, best_eval, best_of, total_budget, nb_wt, save_name):
+def plot_result_nomad(np_evals, np_obj, best_eval, best_of, save_name):
+    """Script to evaluate the blackbox function.
+
+    Parameters
+    ----------
+    np_evals : array
+        List of evaluations where the NOMAD solver could compute the objective function value.
+    np_obj : array
+        List of objective function values where the NOMAD solver could compute the objective function value.
+    best_eval : list
+        List of evaluations where the NOMAD solver improved the objective function value.
+    best_of : list
+        List of objective function values where the NOMAD solver improved the objective function value.
+    save_name : str
+        Name to save the figure.
+
+    Returns
+    -------
+    Pyplot graph of the convergence plot.
+    """
+
     plt.scatter(np_evals, np_obj, color='#d79494', s=10, marker='v', label="NOMAD")
     plt.step(best_eval, best_of, 'r', where='post')
     plt.xlabel("Number of function evaluations")

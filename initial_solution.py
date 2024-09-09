@@ -1,3 +1,12 @@
+"""
+
+This script contains the functions to generate initial solutions respecting the constraints.
+
+This script requires multiple libraries that are written in the `requirements.txt` to be installed in your Python environnement. 
+Make sure to install them properly with the right version.
+
+"""
+
 import itertools
 import sys
 import numpy as np
@@ -6,16 +15,46 @@ import constraints as cst
 import data as d
 import PyNomad
 
-def initial_solution_constrained(nb_wt, D, buildable_zone, lb, ub):
-    print("Generating initial solution...")
-    x, y = initial_sol_nomad(nb_wt, buildable_zone, D, lb, ub, spacing=True)
-    X0 = sum(map(list, zip(x, y)), [])
-    X0 = list(itertools.chain(*zip(x, y)))
-    return X0
-
 def initial_sol_nomad(nb_wt, buildable_zone, D, lb, ub, spacing=True):
+    """Script that generates an initial solution respecting the constraints using the NOMAD solver.
+
+        Parameters
+        ----------
+        nb_wt : int
+            Number of wind turbines.
+        buildable_zone : Shapely MultiPolygon
+            Actual buildable zone. 
+        D : int
+            Diameter of the wind turbine.
+        lb : list
+            Lower bound of the boundary zone on the x and y axis.
+        ub : list
+            Upper bound of the boundary zone on the x and y axis.
+        spacing : boolean
+            If True then the spacing constraint is taken into account for the initial solution. 
+        
+        Returns
+        -------
+        x_best : list
+            List of x coordinates of the initial solution.
+        y_best : list
+            List of y coordinates of the initial solution.
+    """
 
     def initial_sol(x):
+        """Script to compute the eap and constraint values with the NOMAD solver.
+
+        Parameters
+        ----------
+        x : list 
+            List of (x,y) coordinates.
+        
+        Returns
+        -------
+        boolean : 
+            1 if the evaluation was successful, 0 otherwise.
+        """
+
         try:
             # Get coords
             dim = x.size()
@@ -61,10 +100,22 @@ def initial_sol_nomad(nb_wt, buildable_zone, D, lb, ub, spacing=True):
     y_best = result['x_best'][1::2]
     return x_best, y_best
 
-# x, y = initial_sol_nomad(5000, 30)
-# print(time_Nomad)
+def initial_sol_test(param_file_name, x0_file_name):
+    """Script to compute the eap and constraint values with the NOMAD solver.
 
-def initial_sol_test(param_file_name):
+        Parameters
+        ----------
+        param_file_name : str
+            Path to the parameter text file.
+        x0_file_name : str
+            Path where the function will create the x0.txt with the coordinates of the initial solution.
+        
+        Returns
+        -------
+        x0_file_name\x0.txt : text file
+            A text file with the coordinates of the initial solution.
+    """
+    
     # Initializing site and boundary files
     nb_wt, D, hub_height, scale_factor, power_curve, boundary_file, exclusion_zone_file, wind_speed, wind_direction = d.read_param_file(param_file_name)
     lb, ub, boundary_shapely, exclusion_zones_shapely = wf.terrain_setting(boundary_file, exclusion_zone_file, scale_factor=scale_factor)
@@ -72,9 +123,8 @@ def initial_sol_test(param_file_name):
     x, y = initial_sol_nomad(nb_wt, buildable_zone, D, lb, ub, spacing=True)
     X0 = sum(map(list, zip(x, y)), [])
     X0 = list(itertools.chain(*zip(x, y)))
-    f = open("tests/5/x0.txt", 'w+')  # open file in write mode
+    x0_file_path = x0_file_name + "/x0.txt"
+    f = open(x0_file_path, 'w+')  # open file in write mode
     f.write(str(X0))
     f.close()   
-
-# initial_sol_test("tests/5/param.txt")
             
