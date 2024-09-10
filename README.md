@@ -36,15 +36,15 @@ If the validation fails, please send an email to josephine.gobert@hotmail.com wi
 <p> To run a simulation with your own solver, you can either call directly the blackbox functions with the constraints in a Python file using the following code: </p>
 
 ```bash
-import windfarm_opt
-eap, spacing_constraint, placing_constraint = windfarm_opt.aep('.\instance.txt', '.\X.txt')
+import windfarm_eval
+eap, spacing_constraint, placing_constraint = windfarm_eval.aep('.\instance.txt', '.\X.txt')
 ```
 
 
 <p> Or you can call it in a terminal using the following command: </p>
 
 ```bash
-python .\windfarm_opt.py .\instance.txt .\X.txt
+python .\windfarm_eval.py .\instance.txt .\X.txt
 ```
 
 Your `.\instance.txt` file is the instance parameter file and should follow the format such as the one in the `tests` folder:
