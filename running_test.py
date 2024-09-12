@@ -19,7 +19,7 @@ import sys
 import time
 import windfarm_setting as wf
 
-def NOMAD_execution(param_file_name, x0=""):
+def NOMAD_execution(config_file_name, param_file_name, x0=""):
     """Script to execute the NOMAD solver on the tests instance.
 
     Parameters
@@ -41,7 +41,7 @@ def NOMAD_execution(param_file_name, x0=""):
 
     # Initializing site and boundary files
     nb_wt, D, hub_height, scale_factor, power_curve, boundary_file, exclusion_zone_file, wind_speed, wind_direction = d.read_param_file(param_file_name)
-    params, nb_it = d.read_config_file("data/config.txt", nb_wt)
+    params, nb_it = d.read_config_file(config_file_name, nb_wt)
     fmGROSS, WS, WD, max_index, wd_max = wf.site_setting(power_curve, D, hub_height, wind_speed, wind_direction)
     WS_BB, WD_BB = d.read_csv_wind_data(wind_speed, wind_direction)
     lb, ub, boundary_shapely, exclusion_zones_shapely = wf.terrain_setting(boundary_file, exclusion_zone_file, scale_factor=scale_factor)
@@ -74,17 +74,17 @@ def NOMAD_execution(param_file_name, x0=""):
                 sum_dist = cst.placing_constraint(x_coords, y_coords, buildable_zone)
 
                 # Calculate EAP
-                if sum_dist == 0:
-                    cg, eap = bb.aep_func(x_coords, y_coords, fmGROSS, WS_BB, WD_BB)
-                    s_d = cst.spacing_constraint_min(x_coords, y_coords, D)
-                
-                    # NOMAD output
-                    eap = -float(eap)*1000000  
-                    rawBBO = str(eap) + " " + str(s_d)
-                    x.setBBO(rawBBO.encode("UTF-8"))
-                else:
-                    rawBBO = "-"
-                    x.setBBO(rawBBO.encode("UTF-8"))
+                # if sum_dist == 0:
+                cg, eap = bb.aep_func(x_coords, y_coords, fmGROSS, WS_BB, WD_BB)
+                s_d = cst.spacing_constraint_min(x_coords, y_coords, D)
+                # print(sum_dist, eap, s_d)
+                # NOMAD output
+                eap = -float(eap)*1000000  
+                rawBBO = str(eap) + " " + str(sum_dist) + " " + str(s_d)
+                x.setBBO(rawBBO.encode("UTF-8"))
+                # else:
+                    # rawBBO = "-"
+                    # x.setBBO(rawBBO.encode("UTF-8"))
                 
             else:
                 rawBBO = "-"
@@ -146,13 +146,14 @@ def testing_process():
         -------
         NOMAD_execution function results.
         """
-    if os.path.exists("tests_results/output_tests.txt"):
-        os.remove("tests_results/output_tests.txt")
+    # if os.path.exists("tests_results/output_tests.txt"):
+    #     os.remove("tests_results/output_tests.txt")
 
     test_failed = []
-    for i in range(1,2):
+    for i in range(0,4):
         try:
-            NOMAD_execution(param_file_name="tests/" + str(i) + "/param.txt")
+            # NOMAD_execution(param_file_name="tests/" + str(i) + "/param.txt")
+            NOMAD_execution(config_file_name="data/config_" + i + ".txt", param_file_name="tests/1/param.txt")
         except:
             test_failed.append(i)
     if test_failed != []:

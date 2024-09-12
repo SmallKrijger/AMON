@@ -1,0 +1,7 @@
+BB_OUTPUT_TYPE          OBJ PB EB
+BB_INPUT_TYPE           * R
+DIRECTION_TYPE          ORTHO 2N
+MAX_BB_EVAL             15000
+DISPLAY_STATS           BBE OBJ CONS_H
+DISPLAY_ALL_EVAL        false
+DISPLAY_DEGREE          0
