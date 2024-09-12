@@ -14,7 +14,7 @@ def NOMAD_execution(param_file_name, x0=""):
     nb_wt, D, hub_height, scale_factor, power_curve, boundary_file, exclusion_zone_file, wind_speed, wind_direction = d.read_param_file(param_file_name)
     params, nb_it = d.read_config_file("data/config.txt", nb_wt)
     fmGROSS, WS, WD, max_index, wd_max = wf.site_model(power_curve, D, hub_height, wind_speed, wind_direction)
-    WS_BB, WD_BB = wf.read_csv("data/wind_speed_1.csv", "data/wind_direction_1.csv")
+    WS_BB, WD_BB = wf.read_csv(wind_speed, wind_direction)
     lb, ub, boundary_shapely, exclusion_zones_shapely = wf.spatial_constraints(boundary_file, exclusion_zone_file, scale_factor=scale_factor)
     buildable_zone = cst.buildable_zone(boundary_shapely, exclusion_zones_shapely)
 
@@ -26,23 +26,25 @@ def NOMAD_execution(param_file_name, x0=""):
             x_list = [x.get_coord(i) for i in range(dim)]
             x_coords = x_list[0::2]
             y_coords = x_list[1::2]
-
+            # print(x_coords, y_coords)
             if cst.checking_same_coords(x_coords, y_coords):
                 # Calculate constraints
-                sum_dist = cst.placing_constraint(x_coords, y_coords, buildable_zone)
-
+                l_bool = wf.test_constraints_placing(boundary_shapely, exclusion_zones_shapely, x_coords, y_coords)
+                sum_l_bool = sum(l_bool)
+                n_wrong = nb_wt - sum_l_bool
                 # Calculate EAP
-                if sum_dist == 0:
-                    cg, eap = wf.aep_func(x_coords, y_coords, fmGROSS, WS_BB, WD_BB)
-                    s_d = cst.spacing_constraint_min(x_coords, y_coords, D)
-                
-                    # NOMAD output
-                    eap = -float(eap)*1000000  
-                    rawBBO = str(eap) + " " + str(s_d)
-                    x.setBBO(rawBBO.encode("UTF-8"))
-                else:
-                    rawBBO = "-"
-                    x.setBBO(rawBBO.encode("UTF-8"))
+                # if sum_l_bool == nb_wt:
+                    
+                cg, eap = wf.aep_func(x_coords, y_coords, fmGROSS, WS_BB, WD_BB)
+                # s_d = cst.spacing_constraint_min(x_coords, y_coords, D)
+            
+                # NOMAD output
+                eap = -float(eap)*1000000  
+                rawBBO = str(eap) + " " + str(n_wrong)
+                x.setBBO(rawBBO.encode("UTF-8"))
+                # else:
+                #     rawBBO = "-"
+                #     x.setBBO(rawBBO.encode("UTF-8"))
                 
             else:
                 rawBBO = "-"
@@ -95,7 +97,7 @@ def NOMAD_execution(param_file_name, x0=""):
 
 def testing_process():
     test_failed = []
-    for i in range(2,3):
+    for i in range(1,2):
         try:
             NOMAD_execution(param_file_name="tests/" + str(i) + "/param.txt")
         except:
