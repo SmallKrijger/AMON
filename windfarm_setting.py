@@ -17,7 +17,7 @@ from py_wake.turbulence_models import CrespoHernandez
 from py_wake.wind_farm_models import All2AllIterative
 from py_wake.wind_turbines import WindTurbine
 from py_wake.wind_turbines.power_ct_functions import PowerCtTabular
-from shapely.geometry import Polygon, MultiPolygon
+from shapely.geometry import Polygon, MultiPolygon, Point
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -25,6 +25,19 @@ import os
 import pandas as pd
 import shapefile
 import xarray as xr
+
+def test_constraints_placing(boundary_shapely, exclusion_zones_shapely, x, y):
+    # initialize test to True
+    test = np.repeat(True, len(x))
+
+    for i in range(len(x)):
+        # points must be in windfarm boundaries
+        for polygon in boundary_shapely:
+            test[i] *= polygon.contains( Point( x[i], y[i] ) ) 
+        # points must not be in exclusion zones
+        for polygon in exclusion_zones_shapely:
+            test[i] *= not polygon.contains( Point( x[i], y[i] ) )
+    return test 
 
 def wind_turbine_setting(powercurve_path, diameter, hub_height):
     """Script to create a wind turbine with the right characteristics.

@@ -1,4 +1,4 @@
-BB_OUTPUT_TYPE          OBJ EB EB
+BB_OUTPUT_TYPE          OBJ EB
 BB_INPUT_TYPE           * R
 DIRECTION_TYPE          ORTHO 2N
 MAX_BB_EVAL             100
