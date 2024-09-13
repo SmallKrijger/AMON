@@ -127,7 +127,8 @@ def NOMAD_execution(param_file_name, x0=""):
 
     obj_function_value = -result['f_best']*10**(-6)
     cg, eap = bb.aep_func(result['x_best'][0::2], result['x_best'][1::2], fmGROSS, WS_BB, WD_BB)
-    plot_f.plot_terrain(result['x_best'][0::2], result['x_best'][1::2], "EAP", "GWh", obj_function_value, nb_wt, ub, boundary_shapely, exclusion_zones_shapely, max_index=max_index, cg=cg, plot_flow_map=False, save=True, save_name="tests_results/" + test_number + "/layout_" + test_number + ".png")
+    # plot_f.plot_terrain(result['x_best'][0::2], result['x_best'][1::2], "EAP", "GWh", obj_function_value, nb_wt, ub, boundary_shapely, exclusion_zones_shapely, max_index=max_index, cg=cg, plot_flow_map=False, save=True, save_name="tests_results/" + test_number + "/layout_" + test_number + ".png")
+    plot_f.plot_terrain(0, 0, "EAP", "GWh", 0, 0, ub, boundary_shapely, exclusion_zones_shapely, max_index=max_index, cg=cg, plot_flow_map=False, save=True, save_name="tests_results/" + test_number + "/layout_" + test_number + ".png")
     print("Best objective function value : ", obj_function_value, "GWh")
     print("NOMAD execution time : ", t_Nomad, " seconds")
     print("--------- Ending Test", test_number, "---------")
@@ -150,7 +151,7 @@ def testing_process():
         os.remove("tests_results/output_tests.txt")
 
     test_failed = []
-    for i in range(1,2):
+    for i in range(1,5):
         try:
             NOMAD_execution(param_file_name="tests/" + str(i) + "/param.txt")
         except:
