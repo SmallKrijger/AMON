@@ -4,6 +4,6 @@ WT_HUB_HEIGHT           70
 SCALE_FACTOR            1
 POWER_CURVE             data/PowerCurve_V80.txt
 BOUNDARY_FILE           data/poly2.shp
-EXCLUSION_ZONE_FILE     na
+EXCLUSION_ZONE_FILE     data/line.shp
 WIND_SPEED              data/wind_speed_1.csv
 WIND_DIRECTION          data/wind_direction_1.csv

@@ -112,10 +112,10 @@ def initial_sol_test(param_file_name, x0_file_name):
         
         Returns
         -------
-        x0_file_name\x0.txt : text file
+        x0_file_name/x0.txt : text file
             A text file with the coordinates of the initial solution.
     """
-    
+
     # Initializing site and boundary files
     nb_wt, D, hub_height, scale_factor, power_curve, boundary_file, exclusion_zone_file, wind_speed, wind_direction = d.read_param_file(param_file_name)
     lb, ub, boundary_shapely, exclusion_zones_shapely = wf.terrain_setting(boundary_file, exclusion_zone_file, scale_factor=scale_factor)
@@ -127,4 +127,6 @@ def initial_sol_test(param_file_name, x0_file_name):
     f = open(x0_file_path, 'w+')  # open file in write mode
     f.write(str(X0))
     f.close()   
+
+# initial_sol_test('tests/5/param.txt', 'tests/5')
             

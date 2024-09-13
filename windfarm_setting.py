@@ -17,7 +17,7 @@ from py_wake.turbulence_models import CrespoHernandez
 from py_wake.wind_farm_models import All2AllIterative
 from py_wake.wind_turbines import WindTurbine
 from py_wake.wind_turbines.power_ct_functions import PowerCtTabular
-from shapely.geometry import Polygon, MultiPolygon
+from shapely.geometry import Polygon, MultiPolygon, LineString
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -174,6 +174,7 @@ def terrain_setting(boundary_file, constraints_file, scale_factor=0.1):
     boundary_shapely = []
 
     for shape in Boundaries.shapes():
+        print(shape)
         coords = np.array(shape.points).T*scale_factor
         boundary_shapely.append(Polygon(coords.T))
 
@@ -185,8 +186,13 @@ def terrain_setting(boundary_file, constraints_file, scale_factor=0.1):
         Constraints = shapefile.Reader(constraints_file)
 
         for shape in Constraints.shapes():
-            coords = np.array(shape.points).T*scale_factor
-            exclusion_zones_shapely.append(Polygon(coords.T))
+            print(shape)
+            if shape.shapeTypeName == 'POLYGON':
+                coords = np.array(shape.points).T*scale_factor
+                exclusion_zones_shapely.append(Polygon(coords.T))
+            if shape.shapeTypeName == 'POLYLINE':
+                coords = np.array(shape.points).T*scale_factor
+                exclusion_zones_shapely.append(LineString(coords.T))
 
     lb = [(Boundaries.bbox[0])*scale_factor, (Boundaries.bbox[1])*scale_factor]
     ub = [(Boundaries.bbox[2])*scale_factor, (Boundaries.bbox[3])*scale_factor]
