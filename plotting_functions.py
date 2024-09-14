@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 import numpy as np
 
-def plot_terrain(x, y, obj_function, units, obj_function_value, n_wt, ub, boundary_shapely, exclusion_zones_shapely, max_index="", cg="", ax="", plot_flow_map=False, full_wind_rose=False, save=False, save_name=""):
+def plot_terrain(x, y, obj_function, units, obj_function_value, n_wt, ub, boundary_shapely, exclusion_zones_shapely, wind_rose_path="", max_index="", cg="", ax="", plot_flow_map=False, full_wind_rose=False, save=False, save_name=""):
     """Script to evaluate the blackbox function.
 
     Parameters
@@ -35,6 +35,8 @@ def plot_terrain(x, y, obj_function, units, obj_function_value, n_wt, ub, bounda
         List of Shapely polygons for the boundary.
     exclusion_zones_shapely : list
         List of Shapely polygons for the exclusion zone.
+    wind_rose_path : str
+        Path to where the wind rose is saved.
     max_index : int
         Wind direction having the highest frequency.
     cg :
@@ -93,7 +95,7 @@ def plot_terrain(x, y, obj_function, units, obj_function_value, n_wt, ub, bounda
                         loc=1)
         wr_plot.patch.set_edgecolor('black')  
         wr_plot.patch.set_linewidth(2) 
-        im = plt.imread('data/WindRose.png')
+        im = plt.imread(wind_rose_path)
         wr_plot.imshow(im)
         wr_plot.axis('off')
     

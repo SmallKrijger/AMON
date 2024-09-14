@@ -54,7 +54,7 @@ def wind_turbine_setting(powercurve_path, diameter, hub_height):
                         powerCtFunction=PowerCtTabular(u, power,'kW', ct))
     return windturbine
 
-def site_setting(powercurve_path, diameter, hub_height, WS_path, WD_path):
+def site_setting(powercurve_path, diameter, hub_height, WS_path, WD_path, result_dir):
     """Script to create the site and get dominant wind from the wind rose.
 
     Parameters
@@ -69,6 +69,8 @@ def site_setting(powercurve_path, diameter, hub_height, WS_path, WD_path):
         Path to the wind speed data csv.
     WD_path :
         Path to the wind direction data csv.
+    result_dir : str
+        Path to the result directory for the wind rose picture.
 
     Returns
     -------
@@ -127,15 +129,15 @@ def site_setting(powercurve_path, diameter, hub_height, WS_path, WD_path):
     max_index = np.argmax(wd_tot_per_ws)
 
     ## Creating wind rose and saving it
-    script_dir = os.path.dirname(__file__)
-    results_dir = os.path.join(script_dir, 'data/')
+    # script_dir = os.path.dirname(__file__)
+    # results_dir = os.path.join(script_dir, 'data/')
 
-    if not os.path.isdir(results_dir):
-        os.makedirs(results_dir)
+    # if not os.path.isdir(results_dir):
+    #     os.makedirs(results_dir)
     fig, ax = plt.subplots()
     site.plot_wd_distribution(n_wd=36, ax=ax)
     fig.set_size_inches(3,3)
-    plt.savefig(results_dir + "/WindRose.png", dpi=130)
+    plt.savefig(result_dir + "/WindRose.png", dpi=130)
     plt.close()
 
     ## Model for wake, blockage, deficit, superposition and turbulence

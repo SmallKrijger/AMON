@@ -112,7 +112,7 @@ def initial_sol_test(param_file_name, x0_file_name):
         
         Returns
         -------
-        x0_file_name\x0.txt : text file
+        x0_file_name/x0.txt : text file
             A text file with the coordinates of the initial solution.
     """
     
@@ -127,4 +127,6 @@ def initial_sol_test(param_file_name, x0_file_name):
     f = open(x0_file_path, 'w+')  # open file in write mode
     f.write(str(X0))
     f.close()   
+
+
             

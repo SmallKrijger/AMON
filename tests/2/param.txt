@@ -1,4 +1,4 @@
-DIMENSION               20
+DIMENSION               50
 WT_DIAMETER             80
 WT_HUB_HEIGHT           70
 SCALE_FACTOR            1

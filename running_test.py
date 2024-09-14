@@ -40,9 +40,16 @@ def NOMAD_execution(param_file_name, x0=""):
     """
 
     # Initializing site and boundary files
+    test_number = param_file_name.split('/')[1]
+    script_dir = os.path.dirname(__file__)
+    results_test_dir = os.path.join(script_dir, 'tests_results/' + test_number + "/")
+
+    if not os.path.isdir(results_test_dir):
+        os.makedirs(results_test_dir)
+
     nb_wt, D, hub_height, scale_factor, power_curve, boundary_file, exclusion_zone_file, wind_speed, wind_direction = d.read_param_file(param_file_name)
     params, nb_it = d.read_config_file("data/config.txt", nb_wt)
-    fmGROSS, WS, WD, max_index, wd_max = wf.site_setting(power_curve, D, hub_height, wind_speed, wind_direction)
+    fmGROSS, WS, WD, max_index, wd_max = wf.site_setting(power_curve, D, hub_height, wind_speed, wind_direction, results_test_dir)
     WS_BB, WD_BB = d.read_csv_wind_data(wind_speed, wind_direction)
     lb, ub, boundary_shapely, exclusion_zones_shapely = wf.terrain_setting(boundary_file, exclusion_zone_file, scale_factor=scale_factor)
     buildable_zone = cst.buildable_zone(boundary_shapely, exclusion_zones_shapely)
@@ -97,12 +104,7 @@ def NOMAD_execution(param_file_name, x0=""):
         return 1
     
     plt.figure()
-    test_number = param_file_name.split('/')[1]
-    script_dir = os.path.dirname(__file__)
-    results_test_dir = os.path.join(script_dir, 'tests_results/' + test_number + "/")
-
-    if not os.path.isdir(results_test_dir):
-        os.makedirs(results_test_dir)
+    
     stats_file_name = results_test_dir + "/nomad_result_" + test_number + ".0.txt"
     nomad_stat_file = "STATS_FILE  "+ stats_file_name + "  BBE OBJ CONS_H SOL TIME"
     params += [nomad_stat_file]
@@ -150,7 +152,7 @@ def testing_process():
         os.remove("tests_results/output_tests.txt")
 
     test_failed = []
-    for i in range(1,2):
+    for i in range(1,5):
         try:
             NOMAD_execution(param_file_name="tests/" + str(i) + "/param.txt")
         except:
