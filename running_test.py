@@ -151,7 +151,7 @@ def testing_process():
         os.remove("tests_results/output_tests.txt")
 
     test_failed = []
-    for i in range(5,6):
+    for i in range(1,2):
         try:
             NOMAD_execution(param_file_name="tests/" + str(i) + "/param.txt")
         except:

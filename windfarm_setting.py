@@ -52,6 +52,36 @@ def wind_turbine_setting(powercurve_path, diameter, hub_height):
                         diameter=diameter,
                         hub_height=hub_height,
                         powerCtFunction=PowerCtTabular(u, power,'kW', ct))
+    print(power_curve.Ct)
+    print(power_curve.Power)
+    fig, ax1 = plt.subplots()
+    color = 'tab:red'
+    ax1.set_xlabel('Wind speed [m/s]')
+    ax1.set_ylabel('Power [MWh]', color=color)
+    ax1.plot(power_curve.WindSpeed, power_curve.Power, marker='o', color=color, label='Power', zorder=1)
+    # ax1.scatter(power_curve.WindSpeed, power_curve.Power, marker='o', color='lightred', zorder=2)
+    ax1.tick_params(axis='y', labelcolor=color)
+
+    ax2 = ax1.twinx()  # instantiate a second Axes that shares the same x-axis
+
+    color = 'tab:blue'
+    ax2.set_ylabel('Ct', color=color)  # we already handled the x-label with ax1
+    ax2.plot(power_curve.WindSpeed, power_curve.Ct, marker='d', color=color, label='Ct')
+    ax2.tick_params(axis='y', labelcolor=color)
+
+    ax1.legend(loc='lower right', bbox_to_anchor=(0.5, 0))
+    ax2.legend(loc='lower right', bbox_to_anchor=(0.65,0))
+    fig.tight_layout()  # otherwise the right y-label is slightly clipped
+    plt.show()
+    # plt.plot(power_curve.WindSpeed, power_curve.Power, linestyle='-', color='lightblue', zorder=1)
+    # plt.scatter(power_curve.WindSpeed, power_curve.Power, marker='o', color='b', label='Power', zorder=2)
+    # plt.plot(power_curve.WindSpeed, power_curve.Ct.values, linestyle='-', color='lightred')
+    # plt.scatter(power_curve.WindSpeed, power_curve.Ct, marker='o', color='r', label='Ct')
+    # plt.xlabel("Wind speed (m/s)")
+    # plt.ylabel("Power (MW)")
+    # plt.legend()
+    # plt.show()
+    # plt.savefig("PowerCurve.png")
     return windturbine
 
 def site_setting(powercurve_path, diameter, hub_height, WS_path, WD_path):

@@ -2,7 +2,7 @@ DIMENSION               30
 WT_DIAMETER             80
 WT_HUB_HEIGHT           70
 SCALE_FACTOR            0.1
-POWER_CURVE             data/PowerCurve_V80.txt
+POWER_CURVE             data/PowerCurve1_FromOpenWind.txt
 BOUNDARY_FILE           data/boundary_zone.shp
 EXCLUSION_ZONE_FILE     data/exclusion_zones.shp
 WIND_SPEED              data/wind_speed_1.csv
