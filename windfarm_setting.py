@@ -26,6 +26,9 @@ import pandas as pd
 import shapefile
 import xarray as xr
 
+from windrose import WindroseAxes
+
+
 def test_constraints_placing(boundary_shapely, exclusion_zones_shapely, x, y):
     # initialize test to True
     test = np.repeat(True, len(x))
@@ -145,9 +148,11 @@ def site_setting(powercurve_path, diameter, hub_height, WS_path, WD_path):
 
     if not os.path.isdir(results_dir):
         os.makedirs(results_dir)
-    fig, ax = plt.subplots()
-    site.plot_wd_distribution(n_wd=36, ax=ax)
-    fig.set_size_inches(3,3)
+    ax = WindroseAxes.from_ax()
+    WD_values = [WD.values[i][0] for i in range (len(WD.values))]
+    WS_values = [WS.values[i][0] for i in range (len(WS.values))]
+    ax.bar(WD_values, WS_values, normed=True, opening=0.8, edgecolor="white")
+    ax.set_legend()
     plt.savefig(results_dir + "/WindRose.png", dpi=130)
     plt.close()
 
@@ -156,6 +161,7 @@ def site_setting(powercurve_path, diameter, hub_height, WS_path, WD_path):
     blockage_deficitModel = [None, model][isinstance(model, BlockageDeficitModel)]
     wake_deficitModel = [NoWakeDeficit(), model][isinstance(model, WakeDeficitModel)]
     fmGROSS = All2AllIterative(site, Turbine, wake_deficitModel=wake_deficitModel, blockage_deficitModel=blockage_deficitModel, superpositionModel=SquaredSum(), turbulenceModel=CrespoHernandez())
+    print(fmGROSS)
     return fmGROSS, WS, WD, max_index, wd_tot_per_ws[max_index]
 
 def terrain_setting(boundary_file, constraints_file, scale_factor=0.1):
@@ -184,6 +190,9 @@ def terrain_setting(boundary_file, constraints_file, scale_factor=0.1):
 
     # Read domain boundaries, convert to shapely format
     Boundaries = shapefile.Reader(boundary_file)
+    print(Boundaries)
+    print(Boundaries.shapes())
+    print("Points: ", Boundaries.shapes()[0].points)
     boundary_shapely = []
 
     for shape in Boundaries.shapes():
