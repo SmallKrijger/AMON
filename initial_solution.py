@@ -127,6 +127,3 @@ def initial_sol_test(param_file_name, x0_file_name):
     f = open(x0_file_path, 'w+')  # open file in write mode
     f.write(str(X0))
     f.close()   
-
-
-            

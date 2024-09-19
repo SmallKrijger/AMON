@@ -44,7 +44,7 @@ def memoize(func):
     return wrapper
 
 @memoize
-def windfarm_eval(param_file_path):
+def settings(param_file_path):
     """Script that creates the site and terrain for the current optimization.
 
     Parameters
@@ -68,15 +68,15 @@ def windfarm_eval(param_file_path):
 
     # Initializing site and boundary files
     nb_wt, D, hub_height, scale_factor, power_curve, boundary_file, exclusion_zone_file, wind_speed, wind_direction = d.read_param_file(param_file_path)
-    fmGROSS, WS, WD, max_index, wd_max = wf.site_setting(power_curve, D, hub_height, wind_speed, wind_direction)
-    WS_BB, WD_BB = d.read_csv_wind_data("data/wind_speed_1.csv", "data/wind_direction_1.csv") ## remove it at the end (speeding process)
+    fmGROSS, WS, WD, max_index, wd_max = wf.site_setting(power_curve, D, hub_height, wind_speed, wind_direction, "results")
+    WS_BB, WD_BB = d.read_csv_wind_data(wind_speed, wind_direction) 
     lb, ub, boundary_shapely, exclusion_zones_shapely = wf.terrain_setting(boundary_file, exclusion_zone_file, scale_factor=scale_factor)
     buildable_zone = cst.buildable_zone(boundary_shapely, exclusion_zones_shapely)
     return fmGROSS, WS_BB, WD_BB, D, buildable_zone
 
 ## BB function
-def aep(param_file_path, x): 
-    """Script that compute the EAP and the constraints values, return them and store them into the 'results\bb_result.txt' file with the time of execution.
+def windfarm_eval(param_file_path, x): 
+    """Script that compute the EAP and the constraints values, return them and store them into the 'results/bb_result.txt' file with the time of execution.
 
     Parameters
     ----------
@@ -97,7 +97,7 @@ def aep(param_file_path, x):
 
     t0 = time.time()
     # Building site and wind rose
-    fmGROSS, WS_BB, WD_BB, D, buildable_zone = windfarm_eval(param_file_path)
+    fmGROSS, WS_BB, WD_BB, D, buildable_zone = settings(param_file_path)
 
     # Getting the windturbines coordinates 
     if not isinstance(x, list):
@@ -127,7 +127,7 @@ def aep(param_file_path, x):
     t_EAP = t1 - t0
 
     # Storing results
-    file = open('results\bb_result.txt', 'a')
+    file = open('results/bb_result.txt', 'a+')
     file.write(str(eap) + " " + str(s_d) + " "  + str(sum_dist) + " " + str(t_EAP) + "\n")
     file.close()
 

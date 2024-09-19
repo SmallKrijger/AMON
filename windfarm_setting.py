@@ -18,6 +18,7 @@ from py_wake.wind_farm_models import All2AllIterative
 from py_wake.wind_turbines import WindTurbine
 from py_wake.wind_turbines.power_ct_functions import PowerCtTabular
 from shapely.geometry import Polygon, MultiPolygon
+from windrose import WindroseAxes
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -129,14 +130,13 @@ def site_setting(powercurve_path, diameter, hub_height, WS_path, WD_path, result
     max_index = np.argmax(wd_tot_per_ws)
 
     ## Creating wind rose and saving it
-    # script_dir = os.path.dirname(__file__)
-    # results_dir = os.path.join(script_dir, 'data/')
-
-    # if not os.path.isdir(results_dir):
-    #     os.makedirs(results_dir)
-    fig, ax = plt.subplots()
-    site.plot_wd_distribution(n_wd=36, ax=ax)
-    fig.set_size_inches(3,3)
+    if not os.path.isdir(result_dir):
+        os.makedirs(result_dir)
+    ax = WindroseAxes.from_ax()
+    WD_values = [WD.values[i][0] for i in range (len(WD.values))]
+    WS_values = [WS.values[i][0] for i in range (len(WS.values))]
+    ax.bar(WD_values, WS_values, normed=True, opening=0.8, edgecolor="white")
+    ax.set_legend()
     plt.savefig(result_dir + "/WindRose.png", dpi=130)
     plt.close()
 
