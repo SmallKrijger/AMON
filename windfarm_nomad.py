@@ -130,7 +130,7 @@ def NOMAD_execution(param_file_name, x0=""):
 
     obj_function_value = -result['f_best']*10**(-6)
     cg, eap = bb.aep_func(result['x_best'][0::2], result['x_best'][1::2], fmGROSS, max_ws, max_index*10)
-    plot_f.plot_terrain(result['x_best'][0::2], result['x_best'][1::2], "EAP", "GWh", obj_function_value, nb_wt, ub, boundary_shapely, exclusion_zones_shapely, max_index=max_index, max_ws=max_ws, cg=cg, plot_flow_map=True, save=True, save_name="instances_results/" + instance_number + "/layout_" + instance_number + ".png")
+    plot_f.plot_terrain(result['x_best'][0::2], result['x_best'][1::2], "EAP", "GWh", obj_function_value, nb_wt, ub, boundary_shapely, exclusion_zones_shapely, max_index=max_index, max_ws=max_ws, cg=cg, plot_flow_map=False, save=True, save_name="instances_results/" + instance_number + "/layout_" + instance_number + ".png")
     print("Best objective function value : ", obj_function_value, "GWh")
     print("NOMAD execution time : ", t_Nomad, " seconds")
     print("--------- Ending instance", instance_number, "---------")
