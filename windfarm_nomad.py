@@ -49,7 +49,7 @@ def NOMAD_execution(param_file_name, x0=""):
 
     nb_wt, D, hub_height, scale_factor, power_curve, boundary_file, exclusion_zone_file, wind_speed, wind_direction = d.read_param_file(param_file_name)
     params, nb_it = d.read_config_file("data/config.txt", nb_wt)
-    fmGROSS, WS, WD, max_index, wd_max = wf.site_setting(power_curve, D, hub_height, wind_speed, wind_direction, results_instance_dir)
+    fmGROSS, WS, WD, max_index, max_ws = wf.site_setting(power_curve, D, hub_height, wind_speed, wind_direction, results_instance_dir)
     WS_BB, WD_BB = d.read_csv_wind_data(wind_speed, wind_direction)
     lb, ub, boundary_shapely, exclusion_zones_shapely = wf.terrain_setting(boundary_file, exclusion_zone_file, scale_factor=scale_factor)
     buildable_zone = cst.buildable_zone(boundary_shapely, exclusion_zones_shapely)
@@ -116,11 +116,12 @@ def NOMAD_execution(param_file_name, x0=""):
     X0 = ast.literal_eval(content[0])
 
     ## NOMAD optimization 
-    print("Launching NOMAD optimization...")
+    print("...Launching NOMAD optimization...")
     t2 = time.time()
     result = PyNomad.optimize(eap_nomad, X0, nb_wt*lb, nb_wt*ub, params)
     t3 = time.time()
     t_Nomad = t3 - t2
+    print("...Ending NOMAD optimization...")
 
     instance_number = param_file_name.split('/')[1] 
     np_evals, np_obj, best_eval, best_of = d.read_stat_file(nb_it, stat_file_name="instances_results/" + instance_number + "/nomad_result_" + instance_number + ".0.txt")
@@ -128,8 +129,8 @@ def NOMAD_execution(param_file_name, x0=""):
     plot_f.plot_result_nomad(np_evals, np_obj, best_eval, best_of, "instances_results/" + instance_number + "/convergence_plot_" + instance_number + ".png" )
 
     obj_function_value = -result['f_best']*10**(-6)
-    cg, eap = bb.aep_func(result['x_best'][0::2], result['x_best'][1::2], fmGROSS, WS_BB, WD_BB)
-    plot_f.plot_terrain(result['x_best'][0::2], result['x_best'][1::2], "EAP", "GWh", obj_function_value, nb_wt, ub, boundary_shapely, exclusion_zones_shapely, max_index=max_index, cg=cg, plot_flow_map=False, save=True, save_name="instances_results/" + instance_number + "/layout_" + instance_number + ".png")
+    cg, eap = bb.aep_func(result['x_best'][0::2], result['x_best'][1::2], fmGROSS, max_ws, max_index*10)
+    plot_f.plot_terrain(result['x_best'][0::2], result['x_best'][1::2], "EAP", "GWh", obj_function_value, nb_wt, ub, boundary_shapely, exclusion_zones_shapely, max_index=max_index, max_ws=max_ws, cg=cg, plot_flow_map=True, save=True, save_name="instances_results/" + instance_number + "/layout_" + instance_number + ".png")
     print("Best objective function value : ", obj_function_value, "GWh")
     print("NOMAD execution time : ", t_Nomad, " seconds")
     print("--------- Ending instance", instance_number, "---------")
@@ -152,7 +153,7 @@ def run_instance_process():
         os.remove("instances_results/output_instances.txt")
 
     instance_failed = []
-    for i in range(5,6):
+    for i in range(1,7):
         try:
             NOMAD_execution(param_file_name="instances/" + str(i) + "/param.txt")
         except:

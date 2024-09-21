@@ -28,6 +28,6 @@ def aep_func(x, y, fmGROSS, WS_BB, WD_BB):
         Eap value.
     """
 
-    cg = fmGROSS(x, y, ws=WS_BB, wd=WD_BB, time=True)
+    cg = fmGROSS(x, y, ws=WS_BB, wd=WD_BB, time=True, n_cpu=None)
     eap = cg.aep().sum()
     return cg, eap

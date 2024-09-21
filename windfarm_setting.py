@@ -9,12 +9,11 @@ Make sure to install them properly with the right version.
 """
 
 from py_wake.deficit_models import BastankhahGaussianDeficit
-from py_wake.deficit_models.deficit_model import WakeDeficitModel, BlockageDeficitModel
-from py_wake.deficit_models.no_wake import NoWakeDeficit
+from py_wake.deficit_models import VortexCylinder
 from py_wake.site import XRSite
 from py_wake.superposition_models import SquaredSum
 from py_wake.turbulence_models import CrespoHernandez
-from py_wake.wind_farm_models import All2AllIterative
+from py_wake.wind_farm_models import All2AllIterative, PropagateDownwind
 from py_wake.wind_turbines import WindTurbine
 from py_wake.wind_turbines.power_ct_functions import PowerCtTabular
 from shapely.geometry import Polygon, MultiPolygon
@@ -128,10 +127,13 @@ def site_setting(powercurve_path, diameter, hub_height, WS_path, WD_path, result
         wd_tot_per_ws.append(site.ds.P.values[i].sum())
 
     max_index = np.argmax(wd_tot_per_ws)
+    max_index_ws = np.argmax(site.ds.P.values[max_index])
+    max_ws = ws_values[max_index_ws]
 
     ## Creating wind rose and saving it
     if not os.path.isdir(result_dir):
         os.makedirs(result_dir)
+
     ax = WindroseAxes.from_ax()
     WD_values = [WD.values[i][0] for i in range (len(WD.values))]
     WS_values = [WS.values[i][0] for i in range (len(WS.values))]
@@ -141,11 +143,8 @@ def site_setting(powercurve_path, diameter, hub_height, WS_path, WD_path, result
     plt.close()
 
     ## Model for wake, blockage, deficit, superposition and turbulence
-    model = BastankhahGaussianDeficit(use_effective_ws=True) 
-    blockage_deficitModel = [None, model][isinstance(model, BlockageDeficitModel)]
-    wake_deficitModel = [NoWakeDeficit(), model][isinstance(model, WakeDeficitModel)]
-    fmGROSS = All2AllIterative(site, Turbine, wake_deficitModel=wake_deficitModel, blockage_deficitModel=blockage_deficitModel, superpositionModel=SquaredSum(), turbulenceModel=CrespoHernandez())
-    return fmGROSS, WS, WD, max_index, wd_tot_per_ws[max_index]
+    fmGROSS = All2AllIterative(site, Turbine, wake_deficitModel=BastankhahGaussianDeficit(use_effective_ws=True), blockage_deficitModel=VortexCylinder(), superpositionModel=SquaredSum(), turbulenceModel=CrespoHernandez())
+    return fmGROSS, WS, WD, max_index, max_ws
 
 def terrain_setting(boundary_file, constraints_file, scale_factor=0.1):
     """Script to create the terrain and get the lower and upper bound of its boundary.
@@ -185,7 +184,6 @@ def terrain_setting(boundary_file, constraints_file, scale_factor=0.1):
     if constraints_file != "na":
         # Read exclusion zones boundaries, convert to shapely format
         Constraints = shapefile.Reader(constraints_file)
-
         for shape in Constraints.shapes():
             coords = np.array(shape.points).T*scale_factor
             exclusion_zones_shapely.append(Polygon(coords.T))

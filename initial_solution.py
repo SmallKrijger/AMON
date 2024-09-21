@@ -126,4 +126,6 @@ def initial_sol_test(param_file_name, x0_file_name):
     x0_file_path = x0_file_name + "/x0.txt"
     f = open(x0_file_path, 'w+')  # open file in write mode
     f.write(str(X0))
-    f.close()   
+    f.close()  
+
+# initial_sol_test('instances/6/param.txt', 'instances/6') 

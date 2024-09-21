@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 import numpy as np
 
-def plot_terrain(x, y, obj_function, units, obj_function_value, n_wt, ub, boundary_shapely, exclusion_zones_shapely, wind_rose_path="", max_index="", cg="", ax="", plot_flow_map=False, full_wind_rose=False, save=False, save_name=""):
+def plot_terrain(x, y, obj_function, units, obj_function_value, n_wt, ub, boundary_shapely, exclusion_zones_shapely, wind_rose_path="", max_index="", max_ws="", cg="", ax="", plot_flow_map=False, full_wind_rose=False, save=False, save_name=""):
     """Script to evaluate the blackbox function.
 
     Parameters
@@ -39,6 +39,8 @@ def plot_terrain(x, y, obj_function, units, obj_function_value, n_wt, ub, bounda
         Path to where the wind rose is saved.
     max_index : int
         Wind direction having the highest frequency.
+    max_ws : int
+        Wind speed with the highest frequency in the principal wind direction.
     cg :
         fmGROSS site with associated coordinates of the wind turbines and selected wind values.   
     ax : Pyplot Axis
@@ -59,6 +61,9 @@ def plot_terrain(x, y, obj_function, units, obj_function_value, n_wt, ub, bounda
     
     if ax == "":    
         fig, ax = plt.subplots()
+
+    if plot_flow_map:
+        cg.flow_map(wd=[max_index*10], ws=[max_ws]).plot_wake_map(levels=100, plot_windturbines=False, ax=ax)
 
     boundary_filled = gpd.GeoSeries(boundary_shapely)
     boundary = boundary_filled.boundary
@@ -86,7 +91,7 @@ def plot_terrain(x, y, obj_function, units, obj_function_value, n_wt, ub, bounda
         boundary.plot(ax=ax, color=['darkgreen']*len(boundary_shapely), linewidths=1, zorder=2)
     else:
         boundary.plot(ax=ax, color=['darkgreen'], linewidths=1, zorder=2)
-    plt.title( str(obj_function + " = %s " + units + ", Nb wind turbines : %s")%(obj_function_value, n_wt))
+    plt.title( str(obj_function + " = %s " + units + ", Wind turbines : %s")%(np.round(obj_function_value, 4), n_wt))
 
     if full_wind_rose:
         wr_plot = inset_axes(ax,
@@ -104,9 +109,7 @@ def plot_terrain(x, y, obj_function, units, obj_function_value, n_wt, ub, bounda
         v = np.sin(np.radians(max_index*10))
         ax.quiver(ub[0]-100, ub[1]-100, u, v, 40, angles=270-(max_index*10), scale=15)
 
-    if plot_flow_map:
-        cg.flow_map().plot_wake_map() 
-
+    plt.setp(ax.get_xticklabels(), rotation=30, horizontalalignment='right')
     plt.xlabel("X")
     plt.ylabel("Y")
     plt.tight_layout()
