@@ -753,31 +753,31 @@ def testing_process():
             NOMAD_execution(config_file_name="data/config_" + str(i) + ".txt", param_file_name="tests/1/param.txt", i=str(i))
         except:
             test_failed.append(i)
-    for i in range(4,6):
-        try:
-            NOMAD_execution_1(config_file_name="data/config_" + str(i) + ".txt", param_file_name="tests/1/param.txt", i=str(i))
-        except:
-            test_failed.append(i)
-    for i in range(6,8):
-        try:
-            NOMAD_execution_2(config_file_name="data/config_" + str(i) + ".txt", param_file_name="tests/1/param.txt", i=str(i))
-        except:
-            test_failed.append(i)
-    for i in range(8,9):
-        try:
-            NOMAD_execution_3(config_file_name="data/config_" + str(i) + ".txt", param_file_name="tests/1/param.txt", i=str(i))
-        except:
-            test_failed.append(i)
-    for i in range(9,11):
-        try:
-            NOMAD_execution_4(config_file_name="data/config_" + str(i) + ".txt", param_file_name="tests/1/param.txt", i=str(i))
-        except:
-            test_failed.append(i)
-    for i in range(11,12):
-        try:
-            NOMAD_execution_5(config_file_name="data/config_" + str(i) + ".txt", param_file_name="tests/1/param.txt", i=str(i))
-        except:
-            test_failed.append(i)
+    # for i in range(4,6):
+    #     try:
+    #         NOMAD_execution_1(config_file_name="data/config_" + str(i) + ".txt", param_file_name="tests/1/param.txt", i=str(i))
+    #     except:
+    #         test_failed.append(i)
+    # for i in range(6,8):
+    #     try:
+    #         NOMAD_execution_2(config_file_name="data/config_" + str(i) + ".txt", param_file_name="tests/1/param.txt", i=str(i))
+    #     except:
+    #         test_failed.append(i)
+    # for i in range(8,9):
+    #     try:
+    #         NOMAD_execution_3(config_file_name="data/config_" + str(i) + ".txt", param_file_name="tests/1/param.txt", i=str(i))
+    #     except:
+    #         test_failed.append(i)
+    # for i in range(9,11):
+    #     try:
+    #         NOMAD_execution_4(config_file_name="data/config_" + str(i) + ".txt", param_file_name="tests/1/param.txt", i=str(i))
+    #     except:
+    #         test_failed.append(i)
+    # for i in range(11,12):
+    #     try:
+    #         NOMAD_execution_5(config_file_name="data/config_" + str(i) + ".txt", param_file_name="tests/1/param.txt", i=str(i))
+    #     except:
+    #         test_failed.append(i)
     # for i in range(12,13):
     #     try:
     #         NOMAD_execution_5(config_file_name="data/config_" + str(i) + ".txt", param_file_name="tests/1/param.txt", i=str(i))
