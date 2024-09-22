@@ -10,6 +10,7 @@ Make sure to install them properly with the right version.
 
 from py_wake.deficit_models import BastankhahGaussianDeficit
 from py_wake.deficit_models.deficit_model import WakeDeficitModel, BlockageDeficitModel
+from py_wake.deficit_models import VortexCylinder
 from py_wake.deficit_models.no_wake import NoWakeDeficit
 from py_wake.site import XRSite
 from py_wake.superposition_models import SquaredSum
@@ -157,11 +158,7 @@ def site_setting(powercurve_path, diameter, hub_height, WS_path, WD_path):
     plt.close()
 
     ## Model for wake, blockage, deficit, superposition and turbulence
-    model = BastankhahGaussianDeficit(use_effective_ws=True) 
-    blockage_deficitModel = [None, model][isinstance(model, BlockageDeficitModel)]
-    wake_deficitModel = [NoWakeDeficit(), model][isinstance(model, WakeDeficitModel)]
-    fmGROSS = All2AllIterative(site, Turbine, wake_deficitModel=wake_deficitModel, blockage_deficitModel=blockage_deficitModel, superpositionModel=SquaredSum(), turbulenceModel=CrespoHernandez())
-    print(fmGROSS)
+    fmGROSS = All2AllIterative(site, Turbine, wake_deficitModel=BastankhahGaussianDeficit(use_effective_ws=True), blockage_deficitModel=VortexCylinder(), superpositionModel=SquaredSum(), turbulenceModel=CrespoHernandez())
     return fmGROSS, WS, WD, max_index, wd_tot_per_ws[max_index]
 
 def terrain_setting(boundary_file, constraints_file, scale_factor=0.1):
@@ -190,9 +187,6 @@ def terrain_setting(boundary_file, constraints_file, scale_factor=0.1):
 
     # Read domain boundaries, convert to shapely format
     Boundaries = shapefile.Reader(boundary_file)
-    print(Boundaries)
-    print(Boundaries.shapes())
-    print("Points: ", Boundaries.shapes()[0].points)
     boundary_shapely = []
 
     for shape in Boundaries.shapes():

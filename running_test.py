@@ -639,7 +639,7 @@ def NOMAD_execution_5(config_file_name, param_file_name, i, x0=""):
     nb_wt, D, hub_height, scale_factor, power_curve, boundary_file, exclusion_zone_file, wind_speed, wind_direction = d.read_param_file(param_file_name)
     params, nb_it = d.read_config_file(config_file_name, nb_wt)
     fmGROSS, WS, WD, max_index, wd_max = wf.site_setting(power_curve, D, hub_height, wind_speed, wind_direction)
-    WS_BB, WD_BB = d.read_csv_wind_data("data/wind_speed_1.csv", "data/wind_direction_1.csv")
+    WS_BB, WD_BB = d.read_csv_wind_data(wind_speed, wind_direction)
     lb, ub, boundary_shapely, exclusion_zones_shapely = wf.terrain_setting(boundary_file, exclusion_zone_file, scale_factor=scale_factor)
     buildable_zone = cst.buildable_zone(boundary_shapely, exclusion_zones_shapely)
 
@@ -748,41 +748,41 @@ def testing_process():
     #     os.remove("tests_results/output_tests.txt")
 
     test_failed = []
-    # for i in range(0,4):
-    #     try:
-    #         NOMAD_execution(config_file_name="data/config_" + str(i) + ".txt", param_file_name="tests/1/param.txt", i=str(i))
-    #     except:
-    #         test_failed.append(i)
-    # for i in range(4,6):
-    #     try:
-    #         NOMAD_execution_1(config_file_name="data/config_" + str(i) + ".txt", param_file_name="tests/1/param.txt", i=str(i))
-    #     except:
-    #         test_failed.append(i)
-    # for i in range(7,8):
-    #     try:
-    #         NOMAD_execution_2(config_file_name="data/config_" + str(i) + ".txt", param_file_name="tests/1/param.txt", i=str(i))
-    #     except:
-    #         test_failed.append(i)
-    # for i in range(8,9):
-    #     try:
-    #         NOMAD_execution_3(config_file_name="data/config_" + str(i) + ".txt", param_file_name="tests/1/param.txt", i=str(i))
-    #     except:
-    #         test_failed.append(i)
-    # for i in range(9,11):
-    #     try:
-    #         NOMAD_execution_4(config_file_name="data/config_" + str(i) + ".txt", param_file_name="tests/1/param.txt", i=str(i))
-    #     except:
-    #         test_failed.append(i)
-    # for i in range(11,12):
-    #     try:
-    #         NOMAD_execution_5(config_file_name="data/config_" + str(i) + ".txt", param_file_name="tests/1/param.txt", i=str(i))
-    #     except:
-    #         test_failed.append(i)
-    for i in range(12,13):
+    for i in range(0,4):
+        try:
+            NOMAD_execution(config_file_name="data/config_" + str(i) + ".txt", param_file_name="tests/1/param.txt", i=str(i))
+        except:
+            test_failed.append(i)
+    for i in range(4,6):
+        try:
+            NOMAD_execution_1(config_file_name="data/config_" + str(i) + ".txt", param_file_name="tests/1/param.txt", i=str(i))
+        except:
+            test_failed.append(i)
+    for i in range(6,8):
+        try:
+            NOMAD_execution_2(config_file_name="data/config_" + str(i) + ".txt", param_file_name="tests/1/param.txt", i=str(i))
+        except:
+            test_failed.append(i)
+    for i in range(8,9):
+        try:
+            NOMAD_execution_3(config_file_name="data/config_" + str(i) + ".txt", param_file_name="tests/1/param.txt", i=str(i))
+        except:
+            test_failed.append(i)
+    for i in range(9,11):
+        try:
+            NOMAD_execution_4(config_file_name="data/config_" + str(i) + ".txt", param_file_name="tests/1/param.txt", i=str(i))
+        except:
+            test_failed.append(i)
+    for i in range(11,12):
         try:
             NOMAD_execution_5(config_file_name="data/config_" + str(i) + ".txt", param_file_name="tests/1/param.txt", i=str(i))
         except:
             test_failed.append(i)
+    # for i in range(12,13):
+    #     try:
+    #         NOMAD_execution_5(config_file_name="data/config_" + str(i) + ".txt", param_file_name="tests/1/param.txt", i=str(i))
+    #     except:
+    #         test_failed.append(i)
     if test_failed != []:
         print("Test failed: ", test_failed)
     print("--------- Tests completed ---------")

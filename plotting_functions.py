@@ -84,7 +84,7 @@ def plot_terrain(x, y, obj_function, units, obj_function_value, n_wt, ub, bounda
         boundary.plot(ax=ax, color=['darkgreen']*len(boundary_shapely), linewidths=1, zorder=2)
     else:
         boundary.plot(ax=ax, color=['darkgreen'], linewidths=1, zorder=2)
-    plt.title( str(obj_function + " = %s " + units + ", Nb wind turbines : %s")%(obj_function_value, n_wt))
+    plt.title( str(obj_function + " = %s " + units + ", Wind turbines : %s")%(np.round(obj_function_value,3), n_wt))
 
     if full_wind_rose:
         wr_plot = inset_axes(ax,
@@ -105,6 +105,7 @@ def plot_terrain(x, y, obj_function, units, obj_function_value, n_wt, ub, bounda
     if plot_flow_map:
         cg.flow_map().plot_wake_map() 
 
+    plt.setp(ax.get_xticklabels(), rotation=30, horizontalalignment='right')
     plt.xlabel("X")
     plt.ylabel("Y")
     plt.tight_layout()
