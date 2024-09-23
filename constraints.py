@@ -123,7 +123,7 @@ def spacing_constraint_min(x_coords, y_coords, D):
     for list_d in d_matrix:
         for d in list_d:
             if (d != 0):
-                s_d += min(d - D, 0)
+                s_d += min(d - 2*D, 0)
     return -s_d
 
 def checking_same_coords(x_coords, y_coords):

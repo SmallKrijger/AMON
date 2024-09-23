@@ -14,6 +14,7 @@ import windfarm_setting as wf
 import constraints as cst
 import data as d
 import PyNomad
+import plotting_functions as plot_f
 
 def initial_sol_nomad(nb_wt, buildable_zone, D, lb, ub, spacing=True):
     """Script that generates an initial solution respecting the constraints using the NOMAD solver.
@@ -67,6 +68,7 @@ def initial_sol_nomad(nb_wt, buildable_zone, D, lb, ub, spacing=True):
 
             if spacing:
                 s_d = cst.spacing_constraint_min(x_coords, y_coords, D)
+                print(s_d, sum_dist)
                 rawBBO = str(0) + " " + str(s_d) + " " + str(sum_dist)
                 x.setBBO(rawBBO.encode("UTF-8"))
             else:
@@ -81,7 +83,7 @@ def initial_sol_nomad(nb_wt, buildable_zone, D, lb, ub, spacing=True):
     params = ["BB_INPUT_TYPE * R", "STOP_IF_FEASIBLE true", "DISPLAY_DEGREE 0", "DISPLAY_ALL_EVAL false", "DIRECTION_TYPE ORTHO 2N"] 
 
     if spacing:
-        params += ["BB_OUTPUT_TYPE OBJ PB PB"]
+        params += ["BB_OUTPUT_TYPE OBJ PB EB"]
     else:
         params += ["BB_OUTPUT_TYPE OBJ PB"]
 
@@ -121,11 +123,13 @@ def initial_sol_test(param_file_name, x0_file_name):
     lb, ub, boundary_shapely, exclusion_zones_shapely = wf.terrain_setting(boundary_file, exclusion_zone_file, scale_factor=scale_factor)
     buildable_zone = cst.buildable_zone(boundary_shapely, exclusion_zones_shapely)
     x, y = initial_sol_nomad(nb_wt, buildable_zone, D, lb, ub, spacing=True)
+    sum_dist = cst.placing_constraint(x, y, buildable_zone)
+    s_d = cst.spacing_constraint_min(x, y, D)
+    print(cst.checking_same_coords(x, y))
+    print(sum_dist, s_d)
     X0 = sum(map(list, zip(x, y)), [])
     X0 = list(itertools.chain(*zip(x, y)))
     x0_file_path = x0_file_name + "/x0.txt"
     f = open(x0_file_path, 'w+')  # open file in write mode
     f.write(str(X0))
     f.close()  
-
-# initial_sol_test('instances/6/param.txt', 'instances/6') 
