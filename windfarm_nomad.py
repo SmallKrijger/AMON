@@ -153,7 +153,7 @@ def run_instance_process():
         os.remove("instances_results/output_instances.txt")
 
     instance_failed = []
-    for i in range(2,3):
+    for i in range(1,7):
         try:
             NOMAD_execution(param_file_name="instances/" + str(i) + "/param.txt")
         except:
