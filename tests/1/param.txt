@@ -1,7 +1,7 @@
 DIMENSION               30
 WT_DIAMETER             80
 WT_HUB_HEIGHT           67
-SCALE_FACTOR            0.1
+SCALE_FACTOR            0.2
 POWER_CURVE             data/PowerCurve_V80.txt
 BOUNDARY_FILE           data/boundary_zone.shp
 EXCLUSION_ZONE_FILE     data/exclusion_zones.shp

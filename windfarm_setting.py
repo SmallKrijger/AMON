@@ -8,14 +8,14 @@ Make sure to install them properly with the right version.
 
 """
 
-from py_wake.deficit_models import BastankhahGaussianDeficit
+from py_wake.deficit_models import BastankhahGaussianDeficit, NOJDeficit
 from py_wake.deficit_models.deficit_model import WakeDeficitModel, BlockageDeficitModel
 from py_wake.deficit_models import VortexCylinder
 from py_wake.deficit_models.no_wake import NoWakeDeficit
 from py_wake.site import XRSite
 from py_wake.superposition_models import SquaredSum
 from py_wake.turbulence_models import CrespoHernandez
-from py_wake.wind_farm_models import All2AllIterative
+from py_wake.wind_farm_models import All2AllIterative, PropagateDownwind
 from py_wake.wind_turbines import WindTurbine
 from py_wake.wind_turbines.power_ct_functions import PowerCtTabular
 from shapely.geometry import Polygon, MultiPolygon, Point
@@ -159,6 +159,7 @@ def site_setting(powercurve_path, diameter, hub_height, WS_path, WD_path):
 
     ## Model for wake, blockage, deficit, superposition and turbulence
     fmGROSS = All2AllIterative(site, Turbine, wake_deficitModel=BastankhahGaussianDeficit(use_effective_ws=True), blockage_deficitModel=VortexCylinder(), superpositionModel=SquaredSum(), turbulenceModel=CrespoHernandez())
+    # fmGROSS = PropagateDownwind(site, Turbine, wake_deficitModel=NOJDeficit())
     return fmGROSS, WS, WD, max_index, wd_tot_per_ws[max_index]
 
 def terrain_setting(boundary_file, constraints_file, scale_factor=0.1):

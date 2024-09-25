@@ -19,7 +19,7 @@ import sys
 import time
 import windfarm_setting as wf
 
-def NOMAD_execution(config_file_name, param_file_name, i, x0=""):
+def NOMAD_execution(config_file_name, param_file_name, i, x0):
     """Script to execute the NOMAD solver on the tests instance.
 
     Parameters
@@ -110,7 +110,7 @@ def NOMAD_execution(config_file_name, param_file_name, i, x0=""):
     # Generating an valid initial solution
     print("--------- Beginning Test", i, "---------")
     # with open("tests/" + i + "/x0.txt", "r") as file:
-    with open("tests/1/x0.txt", "r") as file:
+    with open(x0, "r") as file:
         content = file.read().splitlines() 
     X0 = ast.literal_eval(content[0])
 
@@ -137,7 +137,7 @@ def NOMAD_execution(config_file_name, param_file_name, i, x0=""):
     f.write(str(i) + " " + str(obj_function_value) + " " + str(t_Nomad) + "\n")
     f.close()   
 
-def NOMAD_execution_1(config_file_name, param_file_name, i, x0=""):
+def NOMAD_execution_1(config_file_name, param_file_name, i, x0):
     """Script to execute the NOMAD solver on the tests instance.
 
     Parameters
@@ -228,7 +228,7 @@ def NOMAD_execution_1(config_file_name, param_file_name, i, x0=""):
     # Generating an valid initial solution
     print("--------- Beginning Test", i, "---------")
     # with open("tests/" + i + "/x0.txt", "r") as file:
-    with open("tests/1/x0.txt", "r") as file:
+    with open(x0, "r") as file:
         content = file.read().splitlines() 
     X0 = ast.literal_eval(content[0])
 
@@ -255,7 +255,7 @@ def NOMAD_execution_1(config_file_name, param_file_name, i, x0=""):
     f.write(str(i) + " " + str(obj_function_value) + " " + str(t_Nomad) + "\n")
     f.close()   
 
-def NOMAD_execution_2(config_file_name, param_file_name, i, x0=""):
+def NOMAD_execution_2(config_file_name, param_file_name, i, x0):
     """Script to execute the NOMAD solver on the tests instance.
 
     Parameters
@@ -349,7 +349,7 @@ def NOMAD_execution_2(config_file_name, param_file_name, i, x0=""):
     # Generating an valid initial solution
     print("--------- Beginning Test", i, "---------")
     # with open("tests/" + i + "/x0.txt", "r") as file:
-    with open("tests/1/x0.txt", "r") as file:
+    with open(x0, "r") as file:
         content = file.read().splitlines() 
     X0 = ast.literal_eval(content[0])
 
@@ -376,7 +376,7 @@ def NOMAD_execution_2(config_file_name, param_file_name, i, x0=""):
     f.write(str(i) + " " + str(obj_function_value) + " " + str(t_Nomad) + "\n")
     f.close()   
 
-def NOMAD_execution_3(config_file_name, param_file_name, i, x0=""):
+def NOMAD_execution_3(config_file_name, param_file_name, i, x0):
     """Script to execute the NOMAD solver on the tests instance.
 
     Parameters
@@ -470,7 +470,7 @@ def NOMAD_execution_3(config_file_name, param_file_name, i, x0=""):
     # Generating an valid initial solution
     print("--------- Beginning Test", i, "---------")
     # with open("tests/" + i + "/x0.txt", "r") as file:
-    with open("tests/1/x0.txt", "r") as file:
+    with open(x0, "r") as file:
         content = file.read().splitlines() 
     X0 = ast.literal_eval(content[0])
 
@@ -497,7 +497,7 @@ def NOMAD_execution_3(config_file_name, param_file_name, i, x0=""):
     f.write(str(i) + " " + str(obj_function_value) + " " + str(t_Nomad) + "\n")
     f.close()   
 
-def NOMAD_execution_4(config_file_name, param_file_name, i, x0=""):
+def NOMAD_execution_4(config_file_name, param_file_name, i, x0):
     """Script to execute the NOMAD solver on the tests instance.
 
     Parameters
@@ -588,7 +588,7 @@ def NOMAD_execution_4(config_file_name, param_file_name, i, x0=""):
     # Generating an valid initial solution
     print("--------- Beginning Test", i, "---------")
     # with open("tests/" + i + "/x0.txt", "r") as file:
-    with open("tests/1/x0.txt", "r") as file:
+    with open(x0, "r") as file:
         content = file.read().splitlines() 
     X0 = ast.literal_eval(content[0])
 
@@ -615,7 +615,7 @@ def NOMAD_execution_4(config_file_name, param_file_name, i, x0=""):
     f.write(str(i) + " " + str(obj_function_value) + " " + str(t_Nomad) + "\n")
     f.close()
 
-def NOMAD_execution_5(config_file_name, param_file_name, i, x0=""):
+def NOMAD_execution_5(config_file_name, param_file_name, i, x0):
     """Script to execute the NOMAD solver on the tests instance.
 
     Parameters
@@ -706,7 +706,7 @@ def NOMAD_execution_5(config_file_name, param_file_name, i, x0=""):
     # Generating an valid initial solution
     print("--------- Beginning Test", i, "---------")
     # with open("tests/" + i + "/x0.txt", "r") as file:
-    with open("tests/1/x0.txt", "r") as file:
+    with open(x0, "r") as file:
         content = file.read().splitlines() 
     X0 = ast.literal_eval(content[0])
 
@@ -746,38 +746,40 @@ def testing_process():
         """
     # if os.path.exists("tests_results/output_tests.txt"):
     #     os.remove("tests_results/output_tests.txt")
-
+    param_txt = ["tests/1/param.txt", "tests/4/param.txt"]
+    x0_txt = ["tests/1/x0.txt", "tests/4/x0.txt"]
     test_failed = []
-    for i in range(0,4):
-        try:
-            NOMAD_execution(config_file_name="data/config_" + str(i) + ".txt", param_file_name="tests/1/param.txt", i=str(i))
-        except:
-            test_failed.append(i)
-    # for i in range(4,6):
-    #     try:
-    #         NOMAD_execution_1(config_file_name="data/config_" + str(i) + ".txt", param_file_name="tests/1/param.txt", i=str(i))
-    #     except:
-    #         test_failed.append(i)
-    # for i in range(6,8):
-    #     try:
-    #         NOMAD_execution_2(config_file_name="data/config_" + str(i) + ".txt", param_file_name="tests/1/param.txt", i=str(i))
-    #     except:
-    #         test_failed.append(i)
-    # for i in range(8,9):
-    #     try:
-    #         NOMAD_execution_3(config_file_name="data/config_" + str(i) + ".txt", param_file_name="tests/1/param.txt", i=str(i))
-    #     except:
-    #         test_failed.append(i)
-    # for i in range(9,11):
-    #     try:
-    #         NOMAD_execution_4(config_file_name="data/config_" + str(i) + ".txt", param_file_name="tests/1/param.txt", i=str(i))
-    #     except:
-    #         test_failed.append(i)
-    # for i in range(11,12):
-    #     try:
-    #         NOMAD_execution_5(config_file_name="data/config_" + str(i) + ".txt", param_file_name="tests/1/param.txt", i=str(i))
-    #     except:
-    #         test_failed.append(i)
+    for j in range(0,2):
+        for i in range(0,4):
+            try:
+                NOMAD_execution(config_file_name="data/config_" + str(i) + ".txt", param_file_name=param_txt[j], i=str(i), x0=x0_txt[j])
+            except:
+                test_failed.append(i)
+        for i in range(4,6):
+            try:
+                NOMAD_execution_1(config_file_name="data/config_" + str(i) + ".txt", param_file_name=param_txt[j], i=str(i), x0=x0_txt[j])
+            except:
+                test_failed.append(i)
+        for i in range(6,8):
+            try:
+                NOMAD_execution_2(config_file_name="data/config_" + str(i) + ".txt", param_file_name=param_txt[j], i=str(i), x0=x0_txt[j])
+            except:
+                test_failed.append(i)
+        for i in range(8,9):
+            try:
+                NOMAD_execution_3(config_file_name="data/config_" + str(i) + ".txt", param_file_name=param_txt[j], i=str(i), x0=x0_txt[j])
+            except:
+                test_failed.append(i)
+        for i in range(9,11):
+            try:
+                NOMAD_execution_4(config_file_name="data/config_" + str(i) + ".txt", param_file_name=param_txt[j], i=str(i), x0=x0_txt[j])
+            except:
+                test_failed.append(i)
+        for i in range(11,12):
+            try:
+                NOMAD_execution_5(config_file_name="data/config_" + str(i) + ".txt", param_file_name=param_txt[j], i=str(i), x0=x0_txt[j])
+            except:
+                test_failed.append(i)
     # for i in range(12,13):
     #     try:
     #         NOMAD_execution_5(config_file_name="data/config_" + str(i) + ".txt", param_file_name="tests/1/param.txt", i=str(i))
