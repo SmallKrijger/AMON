@@ -82,9 +82,9 @@ def NOMAD_execution(param_file_name, x0=""):
 
                 # Calculate EAP
                 if sum_dist == 0:
-                    cg, eap = bb.aep_func(x_coords, y_coords, fmGROSS, WS_BB, WD_BB)
+                    cg, eap, wl = bb.aep_func(x_coords, y_coords, fmGROSS, WS_BB, WD_BB)
                     s_d = cst.spacing_constraint_min(x_coords, y_coords, D)
-                
+
                     # NOMAD output
                     eap = -float(eap)*1000000  
                     rawBBO = str(eap) + " " + str(s_d)
@@ -129,10 +129,13 @@ def NOMAD_execution(param_file_name, x0=""):
     plot_f.plot_result_nomad(np_evals, np_obj, best_eval, best_of, "instances_results/" + instance_number + "/convergence_plot_" + instance_number + ".png" )
 
     obj_function_value = -result['f_best']*10**(-6)
-    cg, eap = bb.aep_func(result['x_best'][0::2], result['x_best'][1::2], fmGROSS, max_ws, max_index*10)
+    cg_m, eap_m, wl_m = bb.aep_func(result['x_best'][0::2], result['x_best'][1::2], fmGROSS, WS_BB, WD_BB)
+    cg, eap, wl = bb.aep_func(result['x_best'][0::2], result['x_best'][1::2], fmGROSS, max_ws, max_index*10)
     plot_f.plot_terrain(result['x_best'][0::2], result['x_best'][1::2], "EAP", "GWh", obj_function_value, nb_wt, ub, boundary_shapely, exclusion_zones_shapely, max_index=max_index, max_ws=max_ws, cg=cg, plot_flow_map=False, save=True, save_name="instances_results/" + instance_number + "/layout_" + instance_number + ".png")
+    plot_f.plot_terrain(result['x_best'][0::2], result['x_best'][1::2], "EAP", "GWh", obj_function_value, nb_wt, ub, boundary_shapely, exclusion_zones_shapely, max_index=max_index, max_ws=max_ws, cg=cg, plot_flow_map=True, save=True, save_name="instances_results/" + instance_number + "/layout_flow_" + instance_number + ".png")
     print("Best objective function value : ", obj_function_value, "GWh")
     print("NOMAD execution time : ", t_Nomad, " seconds")
+    print("Wake loss: ", wl_m, " %")
     print("--------- Ending instance", instance_number, "---------")
     
     f = open("instances_results/output_instances.txt", 'a')

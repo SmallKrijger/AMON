@@ -29,5 +29,8 @@ def aep_func(x, y, fmGROSS, WS_BB, WD_BB):
     """
 
     cg = fmGROSS(x, y, ws=WS_BB, wd=WD_BB, time=True, n_cpu=None)
+    aep_witout_wake_loss = cg.aep(with_wake_loss=False).sum().data
     eap = cg.aep().sum()
-    return cg, eap
+    aep_with_wake_loss = eap.data
+    wl = (aep_witout_wake_loss - aep_with_wake_loss) / aep_witout_wake_loss
+    return cg, eap, wl
