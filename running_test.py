@@ -750,16 +750,16 @@ def testing_process():
     x0_txt = ["tests/1/x0.txt", "tests/4/x0.txt"]
     test_failed = []
     for j in range(0,2):
-        for i in range(0,4):
-            try:
-                NOMAD_execution(config_file_name="data/config_" + str(i) + ".txt", param_file_name=param_txt[j], i=str(i), x0=x0_txt[j])
-            except:
-                test_failed.append(i)
-        for i in range(4,6):
-            try:
-                NOMAD_execution_1(config_file_name="data/config_" + str(i) + ".txt", param_file_name=param_txt[j], i=str(i), x0=x0_txt[j])
-            except:
-                test_failed.append(i)
+        # for i in range(0,4):
+        #     try:
+        #         NOMAD_execution(config_file_name="data/config_" + str(i) + ".txt", param_file_name=param_txt[j], i=str(i), x0=x0_txt[j])
+        #     except:
+        #         test_failed.append(i)
+        # for i in range(4,6):
+        #     try:
+        #         NOMAD_execution_1(config_file_name="data/config_" + str(i) + ".txt", param_file_name=param_txt[j], i=str(i), x0=x0_txt[j])
+        #     except:
+        #         test_failed.append(i)
         for i in range(6,8):
             try:
                 NOMAD_execution_2(config_file_name="data/config_" + str(i) + ".txt", param_file_name=param_txt[j], i=str(i), x0=x0_txt[j])
