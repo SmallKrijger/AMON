@@ -104,8 +104,8 @@ def read_config_file(config_file_name, nb_wt):
         content = file.read().splitlines()
     nb_it = int(content[3].split()[1])
     params = content
-    for i in range(0, nb_wt, 2):
-        params.append(f"VARIABLE_GROUP {i} {i+1}")
+    # for i in range(0, nb_wt, 2):
+    #     params.append(f"VARIABLE_GROUP {i} {i+1}")
     return params, nb_it
 
 def read_stat_file(total_budget, stat_file_name="nomad_result.0.txt"):

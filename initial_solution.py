@@ -68,11 +68,12 @@ def initial_sol_nomad(nb_wt, buildable_zone, D, lb, ub, spacing=True):
 
             if spacing:
                 s_d = cst.spacing_constraint_min(x_coords, y_coords, D)
-                print(s_d, sum_dist)
+                print("spacing : ", s_d, "distance : ", sum_dist)
                 rawBBO = str(0) + " " + str(s_d) + " " + str(sum_dist)
                 x.setBBO(rawBBO.encode("UTF-8"))
             else:
                 rawBBO = str(0) + " " + str(sum_dist)
+                print("distance : ", sum_dist)
                 x.setBBO(rawBBO.encode("UTF-8"))
 
         except:
@@ -87,8 +88,9 @@ def initial_sol_nomad(nb_wt, buildable_zone, D, lb, ub, spacing=True):
     else:
         params += ["BB_OUTPUT_TYPE OBJ PB"]
 
-    for i in range(0, nb_wt, 2):
-        params += [f"VARIABLE_GROUP {i} {i+1}"]
+    if nb_wt > 1:
+        for i in range(0, nb_wt, 2):
+            params += [f"VARIABLE_GROUP {i} {i+1}"]
 
     x = np.random.uniform(lb[0], ub[0], nb_wt)
     y = np.random.uniform(lb[1], ub[1], nb_wt)
@@ -102,7 +104,7 @@ def initial_sol_nomad(nb_wt, buildable_zone, D, lb, ub, spacing=True):
     y_best = result['x_best'][1::2]
     return x_best, y_best
 
-def initial_sol_test(param_file_name, x0_file_name):
+def initial_sol_test(param_file_name, nb_wt, x0_file_name=""):
     """Script to compute the eap and constraint values with the NOMAD solver.
 
         Parameters
@@ -119,17 +121,17 @@ def initial_sol_test(param_file_name, x0_file_name):
     """
     
     # Initializing site and boundary files
-    nb_wt, D, hub_height, scale_factor, power_curve, boundary_file, exclusion_zone_file, wind_speed, wind_direction = d.read_param_file(param_file_name)
+    n_t, D, hub_height, scale_factor, power_curve, boundary_file, exclusion_zone_file, wind_speed, wind_direction = d.read_param_file(param_file_name)
     lb, ub, boundary_shapely, exclusion_zones_shapely = wf.terrain_setting(boundary_file, exclusion_zone_file, scale_factor=scale_factor)
     buildable_zone = cst.buildable_zone(boundary_shapely, exclusion_zones_shapely)
     x, y = initial_sol_nomad(nb_wt, buildable_zone, D, lb, ub, spacing=True)
-    sum_dist = cst.placing_constraint(x, y, buildable_zone)
-    s_d = cst.spacing_constraint_min(x, y, D)
-    print(cst.checking_same_coords(x, y))
-    print(sum_dist, s_d)
+    # sum_dist = cst.placing_constraint(x, y, buildable_zone)
+    # s_d = cst.spacing_constraint_min(x, y, D)
+    # print(cst.checking_same_coords(x, y))
     X0 = sum(map(list, zip(x, y)), [])
     X0 = list(itertools.chain(*zip(x, y)))
-    x0_file_path = x0_file_name + "/x0.txt"
-    f = open(x0_file_path, 'w+')  # open file in write mode
-    f.write(str(X0))
-    f.close()  
+    # x0_file_path = x0_file_name + "/x0.txt"
+    # f = open(x0_file_path, 'w+')  # open file in write mode
+    # f.write(str(X0))
+    # f.close() 
+    return X0 
