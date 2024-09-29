@@ -1,0 +1,12 @@
+1 <xarray.DataArray 'AEP [GWh]' ()> Size: 8B
+array(49.48205758) 0.24688977931185394
+2 <xarray.DataArray 'AEP [GWh]' ()> Size: 8B
+array(65.8954693) 0.3982479243891493
+3 <xarray.DataArray 'AEP [GWh]' ()> Size: 8B
+array(50.11675916) 0.3244584411111557
+4 <xarray.DataArray 'AEP [GWh]' ()> Size: 8B
+array(48.96406387) 0.33999602950862895
+5 <xarray.DataArray 'AEP [GWh]' ()> Size: 8B
+array(130.9789435) 0.24391424352630983
+6 <xarray.DataArray 'AEP [GWh]' ()> Size: 8B
+array(133.27506654) 0.23065970135398542
