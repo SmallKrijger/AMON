@@ -1,6 +1,6 @@
-# WindFarm Layout Optimization
+# AMON
 
-<p> This is a blackbox optimization benchmarking framework for windfarm layout. </p>
+<p> AMON is a blackbox optimization benchmarking framework for windfarm layout. </p>
 
 ## Installation
 
